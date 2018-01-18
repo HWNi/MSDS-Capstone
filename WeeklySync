@@ -1,3 +1,4 @@
+
 01/10/2018
 Web of Science
 Ask Jessec18@uw.edu for access
@@ -28,6 +29,7 @@ Personal and collective (corporate) author names published with the article are 
 <Language>
 <KeywordList>
 
+
 Talk to Jevin:
 PubMed Lables - talk to researcher UIUC
 Other labeled datasets?
@@ -36,4 +38,6 @@ Other labeled datasets?
 Plan next week:
 Data preprocessing
 Discuss features which we want to extract and use in the model 
-
+Ask Torvik VI, Smalheiser NR for the complete Author-ity 2009 dataset
+http://arrowsmith.psych.uic.edu/arrowsmith_uic/author2.html
+>>>>>>> e975758a22c2b648130005dd7fd8c63e5faa221c
