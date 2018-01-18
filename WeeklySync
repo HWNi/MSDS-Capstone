@@ -6,4 +6,22 @@ Arxiv
 
 Pubmed(more features)
 
+
 01/17/2018
+
+Selecte features from PubMed:
+
+<PMID> 
+The PubMed (NLM database that incorporates MEDLINE) unique identifier
+<Article> A
+n 'envelop' element that contains various elements describing the article cited; e.g., article title and author name(s)
+<Journal>
+This is an 'envelop' element that contains various elements describing the journal cited; i.e., ISSN, Volume, Issue, and PubDate and author name(s).
+<Title>
+The full journal title (taken from NLM cataloging data following NLM rules for how to compile a serial name) is exported in this element.
+<ArticleTitle>
+Contains the entire title of the journal article.
+<Abstract> 
+<AbstractText> 
+<Language>
+<KeywordList>
