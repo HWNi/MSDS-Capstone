@@ -21,6 +21,8 @@ This is an 'envelop' element that contains various elements describing the journ
 The full journal title (taken from NLM cataloging data following NLM rules for how to compile a serial name) is exported in this element.
 <ArticleTitle>
 Contains the entire title of the journal article.
+<AuthorList>
+Personal and collective (corporate) author names published with the article are found in <AuthorList>.
 <Abstract> 
 <AbstractText> 
 <Language>
