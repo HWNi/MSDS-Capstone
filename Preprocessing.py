@@ -6,9 +6,83 @@ import re
 import string
 import unicodedata
 
-def remove_noise_simple(src_name):
-    name = src_name.decode('utf-8')
-    return unicodedata.normalize('NFKD', name).encode('ascii','ignore')
+
+def simple_io(author_file):
+    surname_list = []
+    given_name_list =[]
+    with open(author_file, 'rb') as csv_file:
+    author_reader = csv.reader(csv_file, delimiter='\t', quotechar='"')
+    # Skip first line
+    next(author_reader)
+    count = 0
+    max_row = 1000
+    for row in author_reader:
+        count += 1
+        if count > max_row:
+            break
+        if count % 200 == 0:
+            print "\tFinish analysing " \
+                + str(count) + " lines of the file."
+    
+        surname = row[3].lower().strip()
+        given_name = row[4].lower().strip()
+        surname = re.sub('[^a-zA-Z ]', '', surname)
+        given_name = re.sub('[^a-zA-Z ]', '', given_name)
+        surname_list.append(surname)
+        given_name_list.append(given_name)
+        
+    print "Finish reading"+str(max_row)+"surname, given_name"
+    return surname_list,given_name_list
+
+def remove_surname_noise(name_instance_dict,surname_list):
+    for name in list(name_instance_dict.iterkeys()):
+            if name not in name_instance_dict:
+                continue
+            name_instance = name_instance_dict[name]
+            count += 1
+            if count % 20000 == 0:
+                    print "\tFinish analysing " \
+                        + str(count) + " lines of the file for removing noisy last names."
+            if len(name_instance.author_ids) == 1 and not name_instance.is_asian and not name_instance.has_dash:
+                elements = name_instance.name.split()
+                if len(elements) >= 2:
+                    if (elements[-2] + ' ' + elements[-1]) in name_statistics_super and name_statistics_super[(elements[-2] + ' ' + elements[-1])] >= 2:
+                        continue
+                i = len(name) / 3
+                flag = False
+                for j in range(1, i):
+                    elements = name[:-j].split()
+                    if len(elements) < 2:
+                        break
+                    if len(elements) <= 4:
+                        pool = itertools.permutations(elements)
+                    else:
+                        pool = [elements]
+                    for permutation in pool:
+                        candi = ' '.join(permutation)
+                        if candi in name_instance_dict:
+                            if len(candi) <= 10 or len(name[:-j].split()[-1]) == 1:
+                                continue
+                            if len(name_instance_dict[candi].author_ids) > len(name_instance.author_ids):
+                                for id in name_instance.author_ids:
+                                    name_instance_dict[candi].add_author_id(id)
+                                    id_name_dict[id][0] = candi
+                                alternatives = name_instance_dict[name].get_alternatives()
+                                for alternative in alternatives:
+                                    name_instance_dict[candi].add_alternative(alternative)
+                                del name_instance_dict[name]
+                            elif len(name_instance_dict[candi].author_ids) < len(name_instance.author_ids):
+                                for id in set(name_instance_dict[candi].author_ids):
+                                    name_instance.add_author_id(id)
+                                    id_name_dict[id][0] = name_instance.name
+                                alternatives = name_instance_dict[candi].get_alternatives()
+                                for alternative in alternatives:
+                                    name_instance_dict[name].add_alternative(alternative)
+                                del name_instance_dict[candi]
+                           else:
+                            pass
+                            # to be continued here 
+
 
 def remove_noise(src):
     src = src.decode('utf-8')
