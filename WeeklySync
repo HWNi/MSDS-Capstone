@@ -1,4 +1,3 @@
-
 01/10/2018
 Web of Science
 Ask Jessec18@uw.edu for access
@@ -40,3 +39,8 @@ Data preprocessing
 Discuss features which we want to extract and use in the model 
 Ask Torvik VI, Smalheiser NR for the complete Author-ity 2009 dataset
 http://arrowsmith.psych.uic.edu/arrowsmith_uic/author2.html
+
+01/24/18
+Week4 
+Work on 1)converting data from XML to csv 2)name preprocessing 
+Discuss data label with Jevin.
