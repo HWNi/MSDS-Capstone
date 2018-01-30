@@ -1,16 +1,13 @@
-
 01/10/2018
 Web of Science
 Ask Jessec18@uw.edu for access
 
 Arxiv
-
-Pubmed(more features)
+Pubmed(has more features)
 
 
 01/17/2018
-
-Selecte features from PubMed:
+Selected features from PubMed:
 
 <PMID> 
 The PubMed (NLM database that incorporates MEDLINE) unique identifier
@@ -34,11 +31,13 @@ Talk to Jevin:
 PubMed Lables - talk to researcher UIUC
 Other labeled datasets?
 
-
 Plan next week:
 Data preprocessing
 Discuss features which we want to extract and use in the model 
 Ask Torvik VI, Smalheiser NR for the complete Author-ity 2009 dataset
 http://arrowsmith.psych.uic.edu/arrowsmith_uic/author2.html
 
-search for orcidID
+
+01/24/18 Week4 
+Work on 1)converting data from XML to csv 2)name preprocessing 
+Discuss data label with Jevin.
