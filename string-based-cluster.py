@@ -608,7 +608,7 @@ def add_similar_ids_under_name(name_instance_dict, id_name_dict):
             name_instance_dict[author_name_list[0]].bad_name_flag = True
             pool = init_full_dict[full_init_dict[author_name_list[0]]]
             for candidate in pool:
-                if SequenceMatcher(None, author_name_list[0], candidate).ratio() >= 0.98 or SequenceMatcher(None, author_name_list[1], candidate).ratio() >= 0.98:
+                if SequenceMatcher(None, author_name_list[0], candidate).ratio() >= 0.90 or SequenceMatcher(None, author_name_list[1], candidate).ratio() >= 0.90:
                     name_instance_candidate = name_instance_dict[candidate]
                     for id in name_instance_dict[author_name_list[0]].author_ids:
                         name_instance_candidate.add_similar_author_id(id)
@@ -629,7 +629,7 @@ def add_similar_ids_under_name(name_instance_dict, id_name_dict):
                 if name_length + area > 0 and (full_init_dict[author_name], name_length + area) in initlen_full_dict:
                     pool = initlen_full_dict[(full_init_dict[author_name], name_length + area)]
                     for candidate in pool:
-                        if SequenceMatcher(None, author_name, candidate).ratio() >= 0.98:
+                        if SequenceMatcher(None, author_name, candidate).ratio() >= 0.90:
                             name_instance_candidate = name_instance_dict[candidate]
                             for id in name_instance_dict[author_name].author_ids:
                                 name_instance_candidate.add_similar_author_id(id)
@@ -687,8 +687,8 @@ def create_potential_duplicate_groups(name_instance_dict, author_paper_stat):
                             groups.add(tuple([id1, id2]))
     return groups
 
-from sklearn.preprocessing import normalize
-from custom_setting import *
+#from sklearn.preprocessing import normalize
+#from custom_setting import *
 from name import *
 from difflib import SequenceMatcher
 import re
@@ -697,6 +697,7 @@ import fuzzy
 
 normalized_feature_dict = {}
 soundex = fuzzy.Soundex(4)
+
 
 def single_name_comparable(name_instance_A, name_instance_B, name_statistics):
     """Decide whether two name instances are comparable"""
@@ -892,17 +893,22 @@ def my_string_match_score(s1, s2, name_statistics, is_asian=False):
                     tmp1 = element1.lower()
                     tmp2 = element2.lower()
                     ldis = SequenceMatcher(None, tmp1, tmp2).ratio()
-                    if ldis > 0.88 or \
-                            (ldis > 0.80 and abs(int(soundex(tmp1)[1:]) - int(soundex(tmp2)[1:])) <= 2):
-                        if tmp1 == tmp2 and tmp1 in name_statistics and (name_statistics[element1] <= 10 or name_statistics[element2] <= 10):
-                            count += 1
-                            rare_count += 1
-                        else:
-                            count += 1
-                        if flag is True:
-                            flag = False
-                        elements_s2.remove(element2)
-                        break
+                    try:
+                        if ldis > 0.88 or \
+                                (ldis > 0.80 and abs(int(soundex(tmp1)[1:]) - int(soundex(tmp2)[1:])) <= 2):
+                            if tmp1 == tmp2 and tmp1 in name_statistics and (
+                                    name_statistics[element1] <= 10 or name_statistics[element2] <= 10):
+                                count += 1
+                                rare_count += 1
+                            else:
+                                count += 1
+                            if flag is True:
+                                flag = False
+                            elements_s2.remove(element2)
+                            break
+                    except ValueError:
+                        pass
+
             # print  (element1, element2)
             if (element1, element2) in nickname_set:
                 count += 1
@@ -1029,31 +1035,30 @@ def name_comparable(name_instance_A, name_instance_B, name_statistics, strict_mo
     """Decide whether two name instances are comparable considering name reordering, symmetric"""
     return __name_comparable(name_instance_A, name_instance_B, name_statistics, strict_mode) or __name_comparable(name_instance_B, name_instance_A, name_statistics, strict_mode)
 
-def name_group_comparable(group, name_instance_dict, id_name_dict, name_statistics):
-    """Decide whether two groups of name instances are comparable"""
-    for author_A in group:
-        for author_B in group:
-            if author_A < author_B:
-                if not name_comparable(name_instance_dict[id_name_dict[author_A][0]], name_instance_dict[id_name_dict[author_B][0]], name_statistics, False):
-                    # print "\t\tConflicted name group: " + id_name_dict[author_A][0] + '\tv.s.\t' + id_name_dict[author_B][0]
-                    return False
-    return True
 
-def name_group_comparable_with_tolerence(group, group1, group2, name_instance_dict, id_name_dict, name_statistics):
-    """Decide whether two groups of name instances are comparable with certain tolerance"""
-    total = len(group1) * len(group2) + 0.0
-    disobey = 0
-    for author_A in group1:
-        for author_B in group2:
-            if not name_comparable(name_instance_dict[id_name_dict[author_A][0]], name_instance_dict[id_name_dict[author_B][0]], name_statistics, False):
-                disobey += 1
-    if min(len(group1), len(group2)) >= 4:
-        if disobey <= total * 0.2 or disobey <= min(len(group1), len(group2)) * 2:
-            return True
-        else:
-            return False
+count = 0
+statistic = [0] * 14
+
+comparable_list = []
+not_comparable_list = []
+
+# Compute similarity between two name ids based on metapaths if their name are comparable
+for potential_duplicate_group in potential_duplicate_groups:
+    if count % 10000 == 0:
+        print "\tFinish computing similarities for " \
+            + str(float(count)/len(potential_duplicate_groups)*100) \
+            + "% (" + str(count) + "/" + str(len(potential_duplicate_groups)) \
+            + ") possible duplicate groups."
+        print "\tStatistic about merges based on different features: " + str(statistic)
+    count += 1
+
+    author_A = potential_duplicate_group[0]
+    author_B = potential_duplicate_group[1]
+    name_A = id_name_dict[author_A][0]
+    name_B = id_name_dict[author_B][0]
+    if not name_comparable(name_instance_dict[name_A], name_instance_dict[name_B], name_statistics):
+        not_comparable_list.append((name_A, name_B))
+        #print(name_A + " not comparable with " + name_B)
     else:
-        if disobey <= min(len(group1), len(group2)) / 2:
-            return True
-        else:
-            return False
+        #print(name_A + " comparable with " + name_A)
+        comparable_list.append((name_A, name_B))
