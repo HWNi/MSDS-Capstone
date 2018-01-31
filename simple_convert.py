@@ -6,7 +6,9 @@ import re
 import string
 import unicodedata
 import csv
+import sys
 
+csv.field_size_limit(sys.maxsize)
 
 def remove_noise(src):
     src = src.decode('utf-8')
@@ -125,19 +127,22 @@ def generate_new_author_names():
 
     if not os.path.isfile(author_fn):
         print "Start preprocessing author names"
-        with open("data/author_paper.csv") as author_file:
+        with open("data/Author.csv") as author_file:
             f = open(author_fn, 'w')
             for row in csv.reader(author_file, delimiter=","):              
-                if len(row) < 5:
-                    # the row does not have PMID, AuthorID, LastName, ForeName, and Initials 
+                if len(row) < 3:
+                    # the row does not have AuthorID, surName, and given_name
+                    # discard the raw
                     pass
                 else:
-                    lastName_cleaned = remove_noise(row[2])
-                    row[2] = lastName_cleaned
-                    if len(row) > 5:
+                    surname_cleaned = remove_noise(row[1])
+                    row[1] = surname_cleaned
+                    givenname_cleaned = remove_noise(row[2])
+                    row[2] = givenname_cleaned
+                    if len(row) >= 5:
                         # the row has AffiliationInfo
-                        affliation_cleaned = remove_noise(row[5])
-                        row[5] = affliation_cleaned
+                        affliation_cleaned = remove_noise(row[4])
+                        row[4] = affliation_cleaned
                     f.write(','.join(row) + '\n')
 
 generate_new_author_names()

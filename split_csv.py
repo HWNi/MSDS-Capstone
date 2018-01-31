@@ -1,24 +1,25 @@
 import csv,requests,json
-import time
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+
 
 def get_metadata(doi):
     headers = {"accept": "application/x-bibtex"}
     title, year, journal = '', '', ''
+    sessions = requests.Session()
+    retry = Retry(connect=3, backoff_factor=0.5)
+    adapter = HTTPAdapter(max_retries=retry)
+    sessions.mount('http://', adapter)
+    sessions.mount('https://', adapter)
+
     try:
         response = requests.get("http://dx.doi.org/" + doi, headers=headers)
     except requests.exceptions.ConnectionError:
-        print("Connection refused by the server..")
-        sessions = requests.Session()
-        retry = Retry(connect=3, backoff_factor=0.5)
-        adapter = HTTPAdapter(max_retries=retry)
-        sessions.mount('http://', adapter)
-        sessions.mount('https://', adapter)
-        response = requests.get("http://dx.doi.org/" + doi, headers=headers)
+        print "ConnectionError"
+        return title, year, journal
 
     if (response.status_code != 200):
-        print 'Did not find '+doi+' error code '+str(response.status_code)
+        print 'Did not find '+doi+' article, error code '+str(response.status_code)
     else:
         try:
             line = response.text.encode()
@@ -36,6 +37,7 @@ def get_metadata(doi):
             if len(field) >= 11 and field[0:9] == "journal =":
                 journal = field[11:-3]
     return title, year, journal
+
 
 def split_csv():
     author_fn = 'data/Author.csv'
@@ -65,15 +67,13 @@ def split_csv():
             f_paper_author.write(paper_author + '\n')
 
             doi = row[2]
-            if counter >50:
-                title, year, journal = '','',''
-            else:
+            if counter < 1000:
                 title, year, journal = get_metadata(doi)
+            else:
+                title, year, journal = '', '', ''
             paper = row[1] + ',' + row[0] + ',' + row[2]+','+title+ ',' +year+ ',' +journal
             f_paper.write(paper + '\n')
             counter += 1
-
-
 
 
 split_csv()
