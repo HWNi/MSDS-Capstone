@@ -15,14 +15,14 @@ author_file = 'C:\\Users\\nhw10\\Desktop\\Author.csv'
 paper_author_file = 'C:\\Users\\nhw10\\Desktop\\PaperAuthor.csv'
 serialization_dir = 'C:\\Users\\nhw10\\Desktop\\Serialization\\'
 """
-author_file = '/Users/zicong/Desktop/DataScience/Capstone/pubmed_data/Author.csv'
-paper_author_file = '/Users/zicong/Desktop/DataScience/Capstone/pubmed_data/PaperAuthor.csv'
+author_file = '/Users/zicong/Desktop/DataScience/Capstone/pubmed_data/Author_refined_simple_sample.csv'
+paper_author_file = '/Users/zicong/Desktop/DataScience/Capstone/pubmed_data/PaperAuthor_sample.csv'
 serialization_dir = '/Users/zicong/Desktop/DataScience/Capstone/pubmed_data/'
 name_statistics_file = 'name_statistics_seal'
 author_paper_stat_file = 'author_paper_stat_seal'
 name_instance_file = 'name_instance_seal'
 id_name_file = 'id_name_seal'
-
+duplicate_groups_file = "duplicate_groups_seal"
 
 duplicate_author_dict = {}
 def load_name_statistic():
@@ -607,7 +607,7 @@ def add_similar_ids_under_name(name_instance_dict, id_name_dict):
             name_instance_dict[author_name_list[0]].bad_name_flag = True
             pool = init_full_dict[full_init_dict[author_name_list[0]]]
             for candidate in pool:
-                if SequenceMatcher(None, author_name_list[0], candidate).ratio() >= 0.9 or SequenceMatcher(None, author_name_list[1], candidate).ratio() >= 0.9:
+                if SequenceMatcher(None, author_name_list[0], candidate).ratio() >= 0.98 or SequenceMatcher(None, author_name_list[1], candidate).ratio() >= 0.98:
                     name_instance_candidate = name_instance_dict[candidate]
                     for id in name_instance_dict[author_name_list[0]].author_ids:
                         name_instance_candidate.add_similar_author_id(id)
@@ -628,7 +628,7 @@ def add_similar_ids_under_name(name_instance_dict, id_name_dict):
                 if name_length + area > 0 and (full_init_dict[author_name], name_length + area) in initlen_full_dict:
                     pool = initlen_full_dict[(full_init_dict[author_name], name_length + area)]
                     for candidate in pool:
-                        if SequenceMatcher(None, author_name, candidate).ratio() >= 0.94:
+                        if SequenceMatcher(None, author_name, candidate).ratio() >= 0.98:
                             name_instance_candidate = name_instance_dict[candidate]
                             for id in name_instance_dict[author_name].author_ids:
                                 name_instance_candidate.add_similar_author_id(id)
