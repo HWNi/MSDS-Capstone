@@ -1,5 +1,5 @@
 from sklearn.preprocessing import normalize
-#from custom_setting import *
+from custom_setting import *
 from name import *
 from difflib import SequenceMatcher
 import re
@@ -378,22 +378,13 @@ def compute_similarity_score(author_A, author_B, metapaths):
     if author_A not in normalized_feature_dict:
         feature_A = (metapaths.AP.getrow(author_A),
                      metapaths.APA.getrow(author_A),
-                     metapaths.APV.getrow(author_A),
-                     metapaths.APVPA.getrow(author_A),
-                     metapaths.APK.getrow(author_A),
                      metapaths.AO.getrow(author_A),
-                     metapaths.APAPA.getrow(author_A),
-                     metapaths.APAPV.getrow(author_A),
-                     metapaths.AY.getrow(author_A),
-                     metapaths.APW.getrow(author_A))
+                     metapaths.APAPA.getrow(author_A))
         normalized_feature_A = (
             normalize(feature_A[0], norm='l2', axis=1),
             normalize(feature_A[1], norm='l2', axis=1),
             normalize(feature_A[2], norm='l2', axis=1),
-            normalize(feature_A[3], norm='l2', axis=1),
-            normalize(feature_A[4], norm='l2', axis=1),
-            normalize(feature_A[5], norm='l2', axis=1),
-            normalize(feature_A[6], norm='l2', axis=1))
+            normalize(feature_A[3], norm='l2', axis=1))
             # normalize(feature_A[7], norm='l2', axis=1),
             # normalize(feature_A[8], norm='l2', axis=1),
             # normalize(feature_A[9], norm='l2', axis=1),
@@ -405,22 +396,13 @@ def compute_similarity_score(author_A, author_B, metapaths):
     if author_B not in normalized_feature_dict:
         feature_B = (metapaths.AP.getrow(author_B),
                      metapaths.APA.getrow(author_B),
-                     metapaths.APV.getrow(author_B),
-                     metapaths.APVPA.getrow(author_B),
-                     metapaths.APK.getrow(author_B),
                      metapaths.AO.getrow(author_B),
-                     metapaths.APAPA.getrow(author_B),
-                     metapaths.APAPV.getrow(author_B),
-                     metapaths.AY.getrow(author_B),
-                     metapaths.APW.getrow(author_A))
+                     metapaths.APAPA.getrow(author_B))
         normalized_feature_B = (
             normalize(feature_B[0], norm='l2', axis=1),
             normalize(feature_B[1], norm='l2', axis=1),
             normalize(feature_B[2], norm='l2', axis=1),
-            normalize(feature_B[3], norm='l2', axis=1),
-            normalize(feature_B[4], norm='l2', axis=1),
-            normalize(feature_B[5], norm='l2', axis=1),
-            normalize(feature_B[6], norm='l2', axis=1))
+            normalize(feature_B[3], norm='l2', axis=1))
             # normalize(feature_B[7], norm='l2', axis=1),
             # normalize(feature_B[8], norm='l2', axis=1),
             # normalize(feature_B[9], norm='l2', axis=1),
@@ -432,17 +414,8 @@ def compute_similarity_score(author_A, author_B, metapaths):
     similarity = (
         1000000 * normalized_feature_A[0].multiply(normalized_feature_B[0]).sum(),  # same paper
         100000 * normalized_feature_A[1].multiply(normalized_feature_B[1]).sum(),  # APA
-        100000 * normalized_feature_A[2].multiply(normalized_feature_B[2]).sum(),  # AV
-        1000 * normalized_feature_A[3].multiply(normalized_feature_B[3]).sum(),  # AVA
-        # 1000 * normalized_feature_A[3].multiply(normalized_feature_B[6]).sum(),
-        # 1000 * normalized_feature_A[6].multiply(normalized_feature_B[3]).sum(),
-        100000 * normalized_feature_A[4].multiply(normalized_feature_B[4]).sum(),  # APK
-        10000000 * normalized_feature_A[5].multiply(normalized_feature_B[5]).sum(),  # AO
-        1000 * normalized_feature_A[6].multiply(normalized_feature_B[6]).sum(),  # APAPA
-        # 1000 * normalized_feature_A[7].multiply(normalized_feature_B[7]).sum(),  # APKPA
-        # 1000 * normalized_feature_A[8].multiply(normalized_feature_B[8]).sum(),  # APAPV
-        # 1 * normalized_feature_A[9].multiply(normalized_feature_B[9]).sum(),  # AY
-        # 1000 * normalized_feature_A[10].multiply(normalized_feature_B[10]).sum(),  # APW
+        10000000 * normalized_feature_A[2].multiply(normalized_feature_B[2]).sum(),  # AO
+        1000 * normalized_feature_A[3].multiply(normalized_feature_B[3]).sum(),  # APAPA
         merge_threshold)
 
     return similarity

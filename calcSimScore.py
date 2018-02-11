@@ -12,12 +12,13 @@ duplicate_author_dict = {}
 class Metapaths(object):
     """Keeping metapaths features for computing similarity between author id pairs."""
 
-    def __init__(self, AP, APV, APW, APK, AO, AY, APA, APVPA, APAPA, APAPV):
+    def __init__(self, AP, AO, APA, APAPA):
         # AP: author-paper
         # AO: author-orgnization
         # APAPA: author-paper-author-paper-author
         self.AP = AP
         self.AO = AO
+        self.APA = APA
         self.APAPA = APAPA
 
 def load_files():
@@ -33,6 +34,7 @@ def load_files():
     author_org_matrix = load_author_affili_matrix_files()
 
     metapaths = Metapaths(author_paper_matrix, author_org_matrix, coauthor_matrix, coauthor_2hop_matrix)
+
     return (name_instance_dict, id_name_dict, name_statistics, author_paper_stat, metapaths)
 
 def load_name_statistic():
