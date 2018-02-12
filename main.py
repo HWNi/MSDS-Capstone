@@ -6,13 +6,15 @@ import cPickle
 if __name__ == '__main__':
     #csv.field_size_limit(500 * 1024 * 1024)
 
-    print "Step 1/7: Load files"
+    print "Step 1/7: Preprocessing and calculate meta-path-based similarity"
     (name_instance_dict, id_name_dict, name_statistics, author_paper_stat, metapaths) = load_files()
 
-    print "\nStep 2/7: Find similar ids to increase recall"
+    print "Step 2/7: Enlarge candidate pool of duplicates based on author name similarity"
     add_similar_ids_under_name(name_instance_dict, id_name_dict)
+    print "\tSaving files generated in this step for debug."
+    cPickle.dump(name_instance_dict, open(serialization_dir + "step2_" + name_instance_file, "wb"), 2)
 
-    print "\nStep 3/7: Create local clusters or potential_duplicate_groups"
+    print "\nStep 3/7: Rank and merge candidates based on meta-path-based similarity"
     potential_duplicate_groups = create_potential_duplicate_groups(name_instance_dict, author_paper_stat)
 
     print "\nStep 4/7: Find and merge local clusters"

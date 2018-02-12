@@ -1,5 +1,5 @@
-author_file = './data/Author_refined_simple_sample_withAfId.csv'
-paper_author_file = './data/PaperAuthor_sample.csv'
+author_file = './data/author.csv'
+paper_author_file = './data/paper_author.csv'
 
 serialization_dir = './serialization/'
 

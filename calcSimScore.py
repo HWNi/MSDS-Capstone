@@ -1,3 +1,4 @@
+#-*- coding: UTF-8 -*-
 import csv
 import os
 import cPickle
@@ -11,10 +12,10 @@ duplicate_author_dict = {}
 
 class Metapaths(object):
     """Keeping metapaths features for computing similarity between author id pairs."""
-
     def __init__(self, AP, AO, APA, APAPA):
         # AP: author-paper
         # AO: author-orgnization
+        # APA: author-paper-author
         # APAPA: author-paper-author-paper-author
         self.AP = AP
         self.AO = AO
@@ -22,8 +23,8 @@ class Metapaths(object):
         self.APAPA = APAPA
 
 def load_files():
-    """Read in files from the folder "data" if no serialization files exist in
-       folder serialization_dir.
+    """
+    Read in files from the folder "data" if no serialization files exist in folder serialization_dir.
     """
     (name_statistics, raw_name_statistics, name_statistics_super, author_paper_stat) = \
         load_name_statistic()
@@ -32,18 +33,16 @@ def load_files():
     (author_paper_matrix, all_author_paper_matrix, coauthor_matrix, coauthor_2hop_matrix, name_instance_dict, id_name_dict) = \
         load_coauthor_files(name_instance_dict, id_name_dict, author_paper_stat)
     author_org_matrix = load_author_affili_matrix_files()
-
     metapaths = Metapaths(author_paper_matrix, author_org_matrix, coauthor_matrix, coauthor_2hop_matrix)
-
     return (name_instance_dict, id_name_dict, name_statistics, author_paper_stat, metapaths)
 
 def load_name_statistic():
-    """Generate the statistics of name unit (pair) and author-paper.
-       raw_name_statistics keeps statistics of noisy single name unit appeared in author.csv
-       name_statistics keeps statistics of single and pairwise name unit appeared in author.csv
-       name_statistics_super keeps statistics of single and pairwise name unit appeared in both author.csv and paperauthor.csv
     """
-
+    Generate the statistics of name unit (pair) and author-paper.
+    raw_name_statistics keeps statistics of noisy single name unit appeared in author.csv
+    name_statistics keeps statistics of single and pairwise name unit appeared in author.csv
+    name_statistics_super keeps statistics of single and pairwise name unit appeared in both author.csv and paperauthor.csv
+    """
     directory = os.path.dirname(serialization_dir)
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -62,12 +61,12 @@ def load_name_statistic():
         author_paper_stat = cPickle.load(
             open(serialization_dir + author_paper_stat_file, "rb"))
     else:
-        print "\tSerialization files related to name_statistics do not exist."
+        print "Serialization files related to name_statistics do not exist."
         name_statistics = dict()
         raw_name_statistics = dict()
         name_statistics_super = dict()
         author_paper_stat = dict()
-        print "\tReading in the author.csv file."
+        print "Reading in the author.csv file."
         with open(author_file, 'rb') as csv_file:
             author_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
             # Skip first line
@@ -76,9 +75,9 @@ def load_name_statistic():
             for row in author_reader:
                 count += 1
                 if count % 20000 == 0:
-                    print "\\tFinish analysing " \
-                        + str(count) + " lines of the file."
-                author_name = (row[2] + ' ' + row[1]).lower().strip()
+                    print "Finish analysing " + str(count) + " lines of the file."
+                author_name = row[2]
+                author_name = author_name.lower().strip()
                 elements = author_name.split()
                 for element in elements:
                     if element != '':
@@ -96,21 +95,21 @@ def load_name_statistic():
                             # Keep statistics of name unit pairs:
                             # name_statistics if only for names in author.csv
                             # name_statistics_super is for names in both author.csv and paperauthor.csv
-                            name_statistics[element1 + ' ' + element2] = name_statistics.setdefault(element1 + ' ' + element2, 0) + 1
-                            name_statistics_super[element1 + ' ' + element2] = name_statistics_super.setdefault(element1 + ' ' + element2, 0) + 1
-        print "\tReading in the paperauthor.csv file."
+                            name_statistics[element1 + ' ' + element2] = \
+                                name_statistics.setdefault(element1 + ' ' + element2, 0) + 1
+                            name_statistics_super[element1 + ' ' + element2] = \
+                                name_statistics_super.setdefault(element1 + ' ' + element2, 0) + 1
+        print "Reading in the paperauthor.csv file."
         with open(paper_author_file, 'rb') as csv_file:
-            paper_author_reader = csv.reader(
-                csv_file, delimiter=',', quotechar='"')
+            paper_author_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
             # Skip first line
             next(paper_author_reader)
             count = 0
             for row in paper_author_reader:
                 count += 1
                 if count % 500000 == 0:
-                    print "\tFinish analysing " \
-                        + str(count) + " lines of the file."
-                author_name = (row[3] + ' ' + row[2]).lower().strip()
+                    print "\tFinish analysing " + str(count) + " lines of the file."
+                author_name = row[2].lower().strip()
                 author_name = re.sub('[^a-zA-Z ]', '', author_name)
                 author_id = int(row[1])
                 # Keep the publication size of each author id
@@ -122,7 +121,8 @@ def load_name_statistic():
                 for element1 in elements:
                     for element2 in elements:
                         if element1 != element2:
-                            name_statistics_super[element1 + ' ' + element2] = name_statistics_super.setdefault(element1 + ' ' + element2, 0) + 1
+                            name_statistics_super[element1 + ' ' + element2] = \
+                                name_statistics_super.setdefault(element1 + ' ' + element2, 0) + 1
         print "\tWriting into serialization files related to name_statistics.\n"
         cPickle.dump(
             name_statistics,
@@ -166,8 +166,7 @@ def load_author_files(name_statistics,  raw_name_statistics, name_statistics_sup
             for row in author_reader:
                 count += 1
                 if count % 20000 == 0:
-                    print "\tFinish analysing " \
-                        + str(count) + " lines of the file."
+                    print "\tFinish analysing " + str(count) + " lines of the file."
                 author_id = int(row[0])
                 author_name = row[2] + ' ' + row[1]
 
