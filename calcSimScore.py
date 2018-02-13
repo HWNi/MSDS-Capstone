@@ -548,61 +548,60 @@ def load_coauthor_files(name_instance_dict, id_name_dict, author_paper_stat):
     # coauthor_3hop_matrix = coauthor_2hop_matrix * coauthor_matrix.transpose()
 
     return (author_paper_matrix, all_author_paper_matrix, coauthor_matrix, coauthor_2hop_matrix, name_instance_dict, id_name_dict)
-#
-# def load_covenue_files(id_name_dict, author_paper_matrix, all_author_paper_matrix):
-#     """Load covenue relationship."""
-#     if os.path.isfile(serialization_dir + author_venue_matrix_file) and \
-#             os.path.isfile(serialization_dir + covenue_matrix_file) and \
-#             os.path.isfile(serialization_dir + 'all_' + author_venue_matrix_file):
-#         print "\tSerialization files related to author_venue exist."
-#         print "\tReading in the serialization files.\n"
-#         covenue_matrix = cPickle.load(open(
-#             serialization_dir + covenue_matrix_file, "rb"))
-#         author_venue_matrix = cPickle.load(open(
-#             serialization_dir + author_venue_matrix_file, "rb"))
-#         all_author_venue_matrix = cPickle.load(open(
-#             serialization_dir + 'all_' + author_venue_matrix_file, "rb"))
-#     else:
-#         print "\tSerialization files related to author_venue do not exist."
-#         # The maximum id for journal is 5222 and for conference is 22228
-#         all_author_venue_matrix = lil_matrix((max_author + 1, max_conference + max_journal + 1))
-#         paper_venue_matrix = lil_matrix((max_paper + 1, max_conference + max_journal + 1))
-#         print "\tReading in the sanitizedPaper.csv file."
-#         with open(paper_file, 'rb') as csv_file:
-#             paper_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
-#             # Skip first line
-#             next(paper_reader)
-#             for row in paper_reader:
-#                 paper_id = int(row[0])
-#                 conference = int(row[3])
-#                 journal = int(row[4])
-#                 if conference > 0:
-#                     paper_venue_matrix[paper_id, conference + max_journal] = 1
-#                 elif journal > 0:
-#                     paper_venue_matrix[paper_id, journal] = 1
-#
-#         print "\tComputing the author_venue matrix."
-#         author_venue_matrix = author_paper_matrix * paper_venue_matrix
-#         all_author_venue_matrix = all_author_paper_matrix * paper_venue_matrix
-#         print "\tComputing the covenue matrix."
-#         covenue_matrix = author_venue_matrix * author_venue_matrix.transpose()
-#
-#         print "\tWriting into serialization files related to author_venue.\n"
-#         cPickle.dump(
-#             author_venue_matrix,
-#             open(serialization_dir + author_venue_matrix_file, "wb"), 2)
-#         cPickle.dump(
-#             all_author_venue_matrix,
-#             open(serialization_dir + 'all_' + author_venue_matrix_file, "wb"), 2)
-#         cPickle.dump(
-#             covenue_matrix,
-#             open(serialization_dir + covenue_matrix_file, "wb"), 2)
-#
-#     # Time consuming
-#     # print "\tRemoving diagonal elements in covenue_matrix.\n"
-#     # covenue_matrix = covenue_matrix - spdiags(covenue_matrix.diagonal(), 0, max_author + 1, max_author + 1, 'csr')
-#
-#     return (covenue_matrix, author_venue_matrix)
+
+
+def load_covenue_files(id_name_dict, author_paper_matrix, all_author_paper_matrix):
+    """Load covenue relationship."""
+    if os.path.isfile(serialization_dir + author_venue_matrix_file) and \
+            os.path.isfile(serialization_dir + covenue_matrix_file) and \
+            os.path.isfile(serialization_dir + 'all_' + author_venue_matrix_file):
+        print "\tSerialization files related to author_venue exist."
+        print "\tReading in the serialization files.\n"
+        covenue_matrix = cPickle.load(open(
+            serialization_dir + covenue_matrix_file, "rb"))
+        author_venue_matrix = cPickle.load(open(
+            serialization_dir + author_venue_matrix_file, "rb"))
+        all_author_venue_matrix = cPickle.load(open(
+            serialization_dir + 'all_' + author_venue_matrix_file, "rb"))
+    else:
+        print "\tSerialization files related to author_venue do not exist."
+        # The maximum id for conference is 22228
+        all_author_venue_matrix = lil_matrix((max_author + 1, max_conference + 1))
+        paper_venue_matrix = lil_matrix((max_paper + 1, max_conference+ 1))
+        print "\tReading in the sanitizedPaper.csv file."
+        with open(paper_file, 'rb') as csv_file:
+            paper_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
+            # Skip first line
+            next(paper_reader)
+            for row in paper_reader:
+                paper_id = int(row[0])
+                conference = int(row[3])
+                journal = int(row[4])
+                if conference > 0:
+                    paper_venue_matrix[paper_id, conference] = 1
+
+        print "\tComputing the author_venue matrix."
+        author_venue_matrix = author_paper_matrix * paper_venue_matrix
+        all_author_venue_matrix = all_author_paper_matrix * paper_venue_matrix
+        print "\tComputing the covenue matrix."
+        covenue_matrix = author_venue_matrix * author_venue_matrix.transpose()
+
+        print "\tWriting into serialization files related to author_venue.\n"
+        cPickle.dump(
+            author_venue_matrix,
+            open(serialization_dir + author_venue_matrix_file, "wb"), 2)
+        cPickle.dump(
+            all_author_venue_matrix,
+            open(serialization_dir + 'all_' + author_venue_matrix_file, "wb"), 2)
+        cPickle.dump(
+            covenue_matrix,
+            open(serialization_dir + covenue_matrix_file, "wb"), 2)
+
+    # Time consuming
+    # print "\tRemoving diagonal elements in covenue_matrix.\n"
+    # covenue_matrix = covenue_matrix - spdiags(covenue_matrix.diagonal(), 0, max_author + 1, max_author + 1, 'csr')
+
+    return (covenue_matrix, author_venue_matrix)
 
 # def load_author_word_files(id_name_dict, author_paper_matrix):
 #     """Load author-paper-titleword relationship."""

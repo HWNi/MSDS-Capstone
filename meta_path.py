@@ -584,5 +584,3 @@ def merge_local_clusters(real_duplicate_groups, id_name_dict):
         authors_duplicates_dict.setdefault(author_id, set()).add(author_id)
 
     return authors_duplicates_dict
-
-

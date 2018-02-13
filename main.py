@@ -26,7 +26,7 @@ if __name__ == '__main__':
     real_duplicate_groups = real_duplicate_groups1.union(real_duplicate_groups2)
 
     # print "\nStep 5/7: Obtain the closure, then filter noisy names"
-    # authors_duplicates_dict = merge_local_clusters(real_duplicate_groups, id_name_dict)
+    authors_duplicates_dict = merge_local_clusters(real_duplicate_groups, id_name_dict)
     # find_closure(authors_duplicates_dict)
     # refine_result(authors_duplicates_dict, name_instance_dict, id_name_dict, name_statistics, similarity_score_dict,
     #               metapaths, True)
