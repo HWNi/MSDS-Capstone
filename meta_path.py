@@ -127,6 +127,7 @@ def single_name_comparable(name_instance_A, name_instance_B, name_statistics):
 
     return True
 
+
 def my_string_match_score(s1, s2, name_statistics, is_asian=False):
     """Give a score for similarity between s1 and s2"""
     elements_s1 = s1.split()
@@ -295,9 +296,11 @@ def my_string_match_score(s1, s2, name_statistics, is_asian=False):
         return 100
     return count
 
+
 def is_substr(s1, s2):
     """return whether srtring s1 appear in string in s2"""
     return bool(re.search(".*".join(s1), s2)) or bool(re.search(".*".join(s2), s1))
+
 
 def __name_comparable(name_instance_A, name_instance_B, name_statistics, strict_mode=True):
     """Decide whether two name instances are comparable considering name reordering, not symmetric"""
@@ -340,55 +343,23 @@ def __name_comparable(name_instance_A, name_instance_B, name_statistics, strict_
 
     return False
 
+
 def name_comparable(name_instance_A, name_instance_B, name_statistics, strict_mode=True):
     """Decide whether two name instances are comparable considering name reordering, symmetric"""
-    return __name_comparable(name_instance_A, name_instance_B, name_statistics, strict_mode) or __name_comparable(name_instance_B, name_instance_A, name_statistics, strict_mode)
+    return __name_comparable(name_instance_A, name_instance_B, name_statistics, strict_mode) \
+           or __name_comparable(name_instance_B, name_instance_A, name_statistics, strict_mode)
 
-def name_group_comparable(group, name_instance_dict, id_name_dict, name_statistics):
-    """Decide whether two groups of name instances are comparable"""
-    for author_A in group:
-        for author_B in group:
-            if author_A < author_B:
-                if not name_comparable(name_instance_dict[id_name_dict[author_A][0]], name_instance_dict[id_name_dict[author_B][0]], name_statistics, False):
-                    # print "\t\tConflicted name group: " + id_name_dict[author_A][0] + '\tv.s.\t' + id_name_dict[author_B][0]
-                    return False
-    return True
-
-def name_group_comparable_with_tolerence(group, group1, group2, name_instance_dict, id_name_dict, name_statistics):
-    """Decide whether two groups of name instances are comparable with certain tolerance"""
-    total = len(group1) * len(group2) + 0.0
-    disobey = 0
-    for author_A in group1:
-        for author_B in group2:
-            if not name_comparable(name_instance_dict[id_name_dict[author_A][0]], name_instance_dict[id_name_dict[author_B][0]], name_statistics, False):
-                disobey += 1
-    if min(len(group1), len(group2)) >= 4:
-        if disobey <= total * 0.2 or disobey <= min(len(group1), len(group2)) * 2:
-            return True
-        else:
-            return False
-    else:
-        if disobey <= min(len(group1), len(group2)) / 2:
-            return True
-        else:
-            return False
 
 def compute_similarity_score(author_A, author_B, metapaths):
     """Compute similarity of two author ids based on metapaths"""
     if author_A not in normalized_feature_dict:
         feature_A = (metapaths.AP.getrow(author_A),
                      metapaths.APA.getrow(author_A),
-                     metapaths.AO.getrow(author_A),
                      metapaths.APAPA.getrow(author_A))
         normalized_feature_A = (
             normalize(feature_A[0], norm='l2', axis=1),
             normalize(feature_A[1], norm='l2', axis=1),
-            normalize(feature_A[2], norm='l2', axis=1),
-            normalize(feature_A[3], norm='l2', axis=1))
-            # normalize(feature_A[7], norm='l2', axis=1),
-            # normalize(feature_A[8], norm='l2', axis=1),
-            # normalize(feature_A[9], norm='l2', axis=1),
-            # normalize(feature_A[10], norm='l2', axis=1)
+            normalize(feature_A[2], norm='l2', axis=1))
         normalized_feature_dict[author_A] = normalized_feature_A
     else:
         normalized_feature_A = normalized_feature_dict[author_A]
@@ -396,17 +367,11 @@ def compute_similarity_score(author_A, author_B, metapaths):
     if author_B not in normalized_feature_dict:
         feature_B = (metapaths.AP.getrow(author_B),
                      metapaths.APA.getrow(author_B),
-                     metapaths.AO.getrow(author_B),
                      metapaths.APAPA.getrow(author_B))
         normalized_feature_B = (
             normalize(feature_B[0], norm='l2', axis=1),
             normalize(feature_B[1], norm='l2', axis=1),
-            normalize(feature_B[2], norm='l2', axis=1),
-            normalize(feature_B[3], norm='l2', axis=1))
-            # normalize(feature_B[7], norm='l2', axis=1),
-            # normalize(feature_B[8], norm='l2', axis=1),
-            # normalize(feature_B[9], norm='l2', axis=1),
-            # normalize(feature_B[10], norm='l2', axis=1)
+            normalize(feature_B[2], norm='l2', axis=1))
         normalized_feature_dict[author_B] = normalized_feature_B
     else:
         normalized_feature_B = normalized_feature_dict[author_B]
@@ -414,11 +379,11 @@ def compute_similarity_score(author_A, author_B, metapaths):
     similarity = (
         1000000 * normalized_feature_A[0].multiply(normalized_feature_B[0]).sum(),  # same paper
         100000 * normalized_feature_A[1].multiply(normalized_feature_B[1]).sum(),  # APA
-        10000000 * normalized_feature_A[2].multiply(normalized_feature_B[2]).sum(),  # AO
-        1000 * normalized_feature_A[3].multiply(normalized_feature_B[3]).sum(),  # APAPA
+        1000 * normalized_feature_A[2].multiply(normalized_feature_B[2]).sum(),  # APAPA
         merge_threshold)
 
     return similarity
+
 
 def merge_name_instances(name_instance_dict, id_name_dict, author_A, author_B):
     """Merge author_B's name instance into author_A's"""
@@ -429,6 +394,7 @@ def merge_name_instances(name_instance_dict, id_name_dict, author_A, author_B):
         name_instance_dict[id_name_dict[author_A][0]].add_author_id(id)
         id_name_dict[id][0] = id_name_dict[author_A][0]
     del name_instance_dict[to_del]
+
 
 def local_clustering(similarity_dict, potential_duplicate_groups, author_paper_stat, name_instance_dict, id_name_dict, name_statistics, metapaths):
     """Detect duplicate pairs based on coauthor relationship between authors."""
@@ -555,32 +521,3 @@ def local_clustering(similarity_dict, potential_duplicate_groups, author_paper_s
         real_duplicate_groups.add(potential_duplicate_group)
 
     return real_duplicate_groups
-
-def merge_local_clusters(real_duplicate_groups, id_name_dict):
-    """Merge local clusters.
-
-    Parameters:
-        real_duplicate_groups:
-            A set of groups which contain duplicate author_ids separately.
-
-    Returns:
-        A dictionary of duplicate authors with key: author id and value:
-        a list of duplicate author ids
-    """
-    id_group_dict = dict()
-    print "\tMapping each author to his/her duplicate authors from duplicate groups."
-    for group in real_duplicate_groups:
-        for author in group:
-            id_group_dict.setdefault(author, list()).append(group)
-
-    authors_duplicates_dict = dict()
-    for (author_id, real_duplicate_groups) in id_group_dict.iteritems():
-        union_group = set()
-        for group in real_duplicate_groups:
-            union_group = union_group.union(group)
-        authors_duplicates_dict[author_id] = union_group
-
-    for author_id in id_name_dict.iterkeys():
-        authors_duplicates_dict.setdefault(author_id, set()).add(author_id)
-
-    return authors_duplicates_dict

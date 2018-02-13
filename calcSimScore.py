@@ -33,25 +33,21 @@ class Metapaths(object):
     #     self.APAPA = APAPA
     #     self.APAPV = APAPV
 
-    def __init__(self, AP, APV, APW, AO, AY, APA, APVPA, APAPA, APAPV):
+
+    def __init__(self, AP, APA, APAPA):
         #AP: author-paper
         #APV: author-venue
         #APW: author-paper-titleword
         #AO: author-orgnization
         #AY: author-year
         #APA: author-paper-author
-        #APVPA: author-venue-author
+        #APVPA: author-paper-venue-paper-author
         #APAPA: author-paper-author-paper-author
         #APAPV: author-paper-author-paper-venue
         self.AP = AP
-        self.APV = APV
-        self.APW = APW
-        self.AO = AO
-        self.AY = AY
         self.APA = APA
-        self.APVPA = APVPA
         self.APAPA = APAPA
-        self.APAPV = APAPV
+
 
 def load_files():
     """
@@ -77,9 +73,9 @@ def load_files():
         load_author_files(name_statistics, raw_name_statistics, name_statistics_super, author_paper_stat)
     (author_paper_matrix, all_author_paper_matrix, coauthor_matrix, coauthor_2hop_matrix, name_instance_dict, id_name_dict) = \
         load_coauthor_files(name_instance_dict, id_name_dict, author_paper_stat)
-    author_org_matrix = load_author_affili_matrix_files()
-    metapaths = Metapaths(author_paper_matrix, author_venue_matrix, author_word_matrix, author_org_matrix, author_year_matrix, coauthor_matrix, covenue_matrix, coauthor_2hop_matrix, APAPC)
+    metapaths = Metapaths(author_paper_matrix, coauthor_matrix, coauthor_2hop_matrix)
     return (name_instance_dict, id_name_dict, name_statistics, author_paper_stat, metapaths)
+
 
 def load_name_statistic():
     """
@@ -121,7 +117,8 @@ def load_name_statistic():
                 count += 1
                 if count % 20000 == 0:
                     print "\tFinish analysing " + str(count) + " lines of the file."
-                author_name = row[1]
+                # Pub: author_id,surname,given_name,email,affiliation,AffliationId
+                author_name = row[2] + ' ' + row[1]
                 author_name = author_name.lower().strip()
                 elements = author_name.split()
                 for element in elements:
@@ -154,7 +151,8 @@ def load_name_statistic():
                 count += 1
                 if count % 500000 == 0:
                     print "\tFinish analysing " + str(count) + " lines of the file."
-                author_name = row[2]
+                # Pub: pmid,author_id,surname,given_name
+                author_name = row[3] + ' ' + row[2]
                 author_name = author_name.lower().strip()
                 author_name = re.sub('[^a-zA-Z ]', '', author_name)
                 author_id = int(row[1])
@@ -183,6 +181,7 @@ def load_name_statistic():
             author_paper_stat,
             open(serialization_dir + author_paper_stat_file, "wb"), 2)
     return (name_statistics, raw_name_statistics, name_statistics_super, author_paper_stat)
+
 
 def load_author_files(name_statistics, raw_name_statistics, name_statistics_super, author_paper_stat):
     """Load author info into class: Name and do some initial clearning."""
@@ -214,7 +213,7 @@ def load_author_files(name_statistics, raw_name_statistics, name_statistics_supe
                 if count % 20000 == 0:
                     print "\tFinish analysing " + str(count) + " lines of the file."
                 author_id = int(row[0])
-                author_name = row[1]
+                author_name = row[2] + ' ' + row[1]
                 elements = author_name.split()
                 if author_name.upper()[:-1] == author_name[:-1]:
                     new_elements = elements
@@ -268,7 +267,8 @@ def load_author_files(name_statistics, raw_name_statistics, name_statistics_supe
                     print "\tFinish analysing " \
                         + str(count) + " lines of the file."
                 author_id = int(row[0])
-                author_name = row[1].strip()
+                author_name = row[2] + ' ' + row[1]
+                author_name = author_name.strip()
                 if author_name == '':
                     continue
                 elements = author_name.split()
@@ -443,6 +443,7 @@ def load_author_files(name_statistics, raw_name_statistics, name_statistics_supe
 
     return (name_instance_dict, id_name_dict, name_statistics)
 
+
 def load_coauthor_files(name_instance_dict, id_name_dict, author_paper_stat):
     """Load coauthor relationship."""
     if os.path.isfile(serialization_dir + coauthor_matrix_file) and \
@@ -506,7 +507,7 @@ def load_coauthor_files(name_instance_dict, id_name_dict, author_paper_stat):
                     for id in duplicate_author_dict[author_id]:
                         all_author_paper_matrix[id, paper_id] = 1
                 if author_id in id_name_dict:
-                    author = Name(row[2], True)
+                    author = Name(row[3] + ' ' + row[2], True)
                     author_paper_matrix[author_id, paper_id] = 1
                     # Add names appeared in paperauthor.csv
                     if author.last_name == name_instance_dict[id_name_dict[author_id][0]].last_name:
@@ -576,7 +577,6 @@ def load_covenue_files(id_name_dict, author_paper_matrix, all_author_paper_matri
             for row in paper_reader:
                 paper_id = int(row[0])
                 conference = int(row[3])
-                journal = int(row[4])
                 if conference > 0:
                     paper_venue_matrix[paper_id, conference] = 1
 
@@ -603,119 +603,121 @@ def load_covenue_files(id_name_dict, author_paper_matrix, all_author_paper_matri
 
     return (covenue_matrix, author_venue_matrix)
 
-# def load_author_word_files(id_name_dict, author_paper_matrix):
-#     """Load author-paper-titleword relationship."""
-#     if os.path.isfile(serialization_dir + author_word_matrix_file):
-#         print "\tSerialization files related to author_word exist."
-#         print "\tReading in the serialization files.\n"
-#         author_word_matrix = cPickle.load(open(
-#             serialization_dir + author_word_matrix_file, "rb"))
-#     else:
-#         print "\tSerialization files related to author_word do not exist."
-#
-#         # stopwords = set()
-#         # print "\tReading in stopword file."
-#         # with open(stopword_file, 'rb') as csv_file:
-#         #     stopword_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
-#         #     # skip first line
-#         #     next(stopword_reader)
-#         #     for row in stopword_reader:
-#         #         if row:
-#         #             stopwords.add(row[0].strip())
-#
-#         print "\tReading in the sanitizedPaper.csv file and roughly filter words."
-#         word_statistic_dict = {}
-#         with open(paper_file, 'rb') as csv_file:
-#             paper_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
-#             # skip first line
-#             next(paper_reader)
-#             index = 0
-#             for row in paper_reader:
-#                 paper_id = int(row[0])
-#                 title = row[1]
-#                 words = title.split(' ')
-#                 for word in words:
-#                     word = word.strip().lower()
-#                     if word != "":
-#                         word_statistic_dict.setdefault(word, 0)
-#                         word_statistic_dict[word] += 1
-#         stopwords = set()
-#         max_word = 0
-#         for (word, count) in word_statistic_dict.iteritems():
-#             if count <= 1 or count > 500000:
-#                 stopwords.add(word)
-#             else:
-#                 max_word += 1
-#         print "\tThere are in totoal " + str(max_word) + " words."
-#         max_word -= 1
-#         print "\tComputing the paper_word matrix."
-#         paper_word_matrix = lil_matrix((max_paper + 1, max_word + 1))
-#
-#         word_id_dict = {}
-#         id_word_dict = {}
-#         with open(paper_file, 'rb') as csv_file:
-#             paper_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
-#             # Skip first line
-#             next(paper_reader)
-#             index = 0
-#             for row in paper_reader:
-#                 paper_id = int(row[0])
-#                 title = row[1]
-#                 words = title.split(' ')
-#                 for word in words:
-#                     word = word.strip().lower()
-#                     if word not in stopwords and word != "":
-#                         if word not in word_id_dict:
-#                             word_id_dict[word] = index
-#                             id_word_dict[index] = word
-#                             paper_word_matrix[paper_id, index] = 1
-#                             index += 1
-#                         else:
-#                             paper_word_matrix[paper_id, word_id_dict[word]] = 1
-#
-#         print "\tComputing the author_word matrix."
-#         author_word_matrix = author_paper_matrix * paper_word_matrix
-#
-#         author_word_count = author_word_matrix.sum(0)
-#         count = 0
-#         # View high frequent words as stopwords
-#         for word_index in xrange(max_word + 1):
-#             if author_word_count[0, word_index] <= 1 or author_word_count[0, word_index] > word_title_count_threshold:
-#                 stopwords.add(id_word_dict[word_index])
-#                 count += 1
-#
-#         print "\tRemoving " + str(count) + " words."
-#         print "\tRecomputing the paper_word matrix."
-#         paper_word_matrix = lil_matrix((max_paper + 1, max_word - count + 1))
-#
-#         word_id_dict = {}
-#         with open(paper_file, 'rb') as csv_file:
-#             paper_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
-#             # skip first line
-#             next(paper_reader)
-#             index = 0
-#             for row in paper_reader:
-#                 paper_id = int(row[0])
-#                 title = row[1]
-#                 words = title.split(' ')
-#                 for word in words:
-#                     word = word.strip().lower()
-#                     if word not in stopwords and word != "":
-#                         if word not in word_id_dict:
-#                             word_id_dict[word] = index
-#                             paper_word_matrix[paper_id, index] = 1
-#                             index += 1
-#                         else:
-#                             paper_word_matrix[paper_id, word_id_dict[word]] = 1
-#
-#         print "\tRecomputing the author_word matrix."
-#         author_word_matrix = author_paper_matrix * paper_word_matrix
-#
-#         print "\tWriting into serialization files related to author_word.\n"
-#         cPickle.dump(
-#             author_word_matrix,
-#             open(serialization_dir + author_word_matrix_file, "wb"), 2)
-#     return author_word_matrix
+
+def load_author_word_files(id_name_dict, author_paper_matrix):
+    """Load author-paper-titleword relationship."""
+    if os.path.isfile(serialization_dir + author_word_matrix_file):
+        print "\tSerialization files related to author_word exist."
+        print "\tReading in the serialization files.\n"
+        author_word_matrix = cPickle.load(open(
+            serialization_dir + author_word_matrix_file, "rb"))
+    else:
+        print "\tSerialization files related to author_word do not exist."
+
+        # stopwords = set()
+        # print "\tReading in stopword file."
+        # with open(stopword_file, 'rb') as csv_file:
+        #     stopword_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
+        #     # skip first line
+        #     next(stopword_reader)
+        #     for row in stopword_reader:
+        #         if row:
+        #             stopwords.add(row[0].strip())
+
+        print "\tReading in the sanitizedPaper.csv file and roughly filter words."
+        word_statistic_dict = {}
+        with open(paper_file, 'rb') as csv_file:
+            paper_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
+            # skip first line
+            next(paper_reader)
+            index = 0
+            for row in paper_reader:
+                paper_id = int(row[0])
+                title = row[1]
+                words = title.split(' ')
+                for word in words:
+                    word = word.strip().lower()
+                    if word != "":
+                        word_statistic_dict.setdefault(word, 0)
+                        word_statistic_dict[word] += 1
+        stopwords = set()
+        max_word = 0
+        for (word, count) in word_statistic_dict.iteritems():
+            if count <= 1 or count > 500000:
+                stopwords.add(word)
+            else:
+                max_word += 1
+        print "\tThere are in totoal " + str(max_word) + " words."
+        max_word -= 1
+        print "\tComputing the paper_word matrix."
+        paper_word_matrix = lil_matrix((max_paper + 1, max_word + 1))
+
+        word_id_dict = {}
+        id_word_dict = {}
+        with open(paper_file, 'rb') as csv_file:
+            paper_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
+            # Skip first line
+            next(paper_reader)
+            index = 0
+            for row in paper_reader:
+                paper_id = int(row[0])
+                title = row[1]
+                words = title.split(' ')
+                for word in words:
+                    word = word.strip().lower()
+                    if word not in stopwords and word != "":
+                        if word not in word_id_dict:
+                            word_id_dict[word] = index
+                            id_word_dict[index] = word
+                            paper_word_matrix[paper_id, index] = 1
+                            index += 1
+                        else:
+                            paper_word_matrix[paper_id, word_id_dict[word]] = 1
+
+        print "\tComputing the author_word matrix."
+        author_word_matrix = author_paper_matrix * paper_word_matrix
+
+        author_word_count = author_word_matrix.sum(0)
+        count = 0
+        # View high frequent words as stopwords
+        for word_index in xrange(max_word + 1):
+            if author_word_count[0, word_index] <= 1 or author_word_count[0, word_index] > word_title_count_threshold:
+                stopwords.add(id_word_dict[word_index])
+                count += 1
+
+        print "\tRemoving " + str(count) + " words."
+        print "\tRecomputing the paper_word matrix."
+        paper_word_matrix = lil_matrix((max_paper + 1, max_word - count + 1))
+
+        word_id_dict = {}
+        with open(paper_file, 'rb') as csv_file:
+            paper_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
+            # skip first line
+            next(paper_reader)
+            index = 0
+            for row in paper_reader:
+                paper_id = int(row[0])
+                title = row[1]
+                words = title.split(' ')
+                for word in words:
+                    word = word.strip().lower()
+                    if word not in stopwords and word != "":
+                        if word not in word_id_dict:
+                            word_id_dict[word] = index
+                            paper_word_matrix[paper_id, index] = 1
+                            index += 1
+                        else:
+                            paper_word_matrix[paper_id, word_id_dict[word]] = 1
+
+        print "\tRecomputing the author_word matrix."
+        author_word_matrix = author_paper_matrix * paper_word_matrix
+
+        print "\tWriting into serialization files related to author_word.\n"
+        cPickle.dump(
+            author_word_matrix,
+            open(serialization_dir + author_word_matrix_file, "wb"), 2)
+    return author_word_matrix
+
 
 def load_author_affili_matrix_files():
     """Load author-affiliation(organization) relationship."""
@@ -846,59 +848,60 @@ def load_author_affili_matrix_files():
 
     return author_affi_matrix
 
-# def load_author_year_matrix_files():
-#     """Load author-paper-year relationship."""
-#     if os.path.isfile(serialization_dir + author_year_matrix_file):
-#         print "\tSerialization files related to author_year exist."
-#         print "\tReading in the serialization files."
-#         author_year_matrix = cPickle.load(open(serialization_dir + author_year_matrix_file, "rb"))
-#
-#     else:
-#         MinValidYear = 1900
-#         MaxValidYear = 2013
-#         nValidYearSpan = MaxValidYear - MinValidYear + 1
-#
-#         dict_paper_year = dict()
-#         dict_author_year = dict()
-#
-#         print "\tConstruct paperID-year dict"
-#         with open(paper_file, 'rb') as csv_file:
-#             csv_reader = csv.reader(csv_file, delimiter=',')
-#             next(csv_reader)
-#             for row in csv_reader:
-#                 paper_id = int(row[0])
-#                 year = int(row[2])
-#                 if year >= MinValidYear and year <= MaxValidYear:
-#                     dict_paper_year[paper_id] = year
-#
-#         print "\tConstruct author-year dict"
-#         cnt_line = 0
-#         with open(paper_author_file, 'rb') as csv_file:
-#             paper_author_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
-#             next(paper_author_reader)
-#             for row in paper_author_reader:
-#                 cnt_line += 1
-#                 if cnt_line % 2000000 == 0:
-#                     print "\tFinish analysing " + str(cnt_line) + " lines of the file."
-#                 paper_id = int(row[0])
-#                 author_id = int(row[1])
-#                 if paper_id in dict_paper_year:
-#                     year = dict_paper_year[paper_id]
-#                     if author_id not in dict_author_year:
-#                         dict_author_year[author_id] = [year]
-#                     else:
-#                         dict_author_year[author_id] += [year]
-#
-#         #Create author-year matrix
-#         print "\tCreating author-year matrix."
-#         author_year_matrix = lil_matrix((max_author + 1, nValidYearSpan))
-#         for author_id in dict_author_year.iterkeys():
-#             allYears = dict_author_year[author_id]
-#             for year in allYears:
-#                 author_year_matrix[author_id, year - MinValidYear] += 1
-#
-#         print "\tWriting into serialization files related to author_year."
-#         cPickle.dump(author_year_matrix,
-#                      open(serialization_dir + author_year_matrix_file, "wb"), 2)
-#
-#     return author_year_matrix
+
+def load_author_year_matrix_files():
+    """Load author-paper-year relationship."""
+    if os.path.isfile(serialization_dir + author_year_matrix_file):
+        print "\tSerialization files related to author_year exist."
+        print "\tReading in the serialization files."
+        author_year_matrix = cPickle.load(open(serialization_dir + author_year_matrix_file, "rb"))
+
+    else:
+        MinValidYear = 1900
+        MaxValidYear = 2013
+        nValidYearSpan = MaxValidYear - MinValidYear + 1
+
+        dict_paper_year = dict()
+        dict_author_year = dict()
+
+        print "\tConstruct paperID-year dict"
+        with open(paper_file, 'rb') as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=',')
+            next(csv_reader)
+            for row in csv_reader:
+                paper_id = int(row[0])
+                year = int(row[2])
+                if year >= MinValidYear and year <= MaxValidYear:
+                    dict_paper_year[paper_id] = year
+
+        print "\tConstruct author-year dict"
+        cnt_line = 0
+        with open(paper_author_file, 'rb') as csv_file:
+            paper_author_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
+            next(paper_author_reader)
+            for row in paper_author_reader:
+                cnt_line += 1
+                if cnt_line % 2000000 == 0:
+                    print "\tFinish analysing " + str(cnt_line) + " lines of the file."
+                paper_id = int(row[0])
+                author_id = int(row[1])
+                if paper_id in dict_paper_year:
+                    year = dict_paper_year[paper_id]
+                    if author_id not in dict_author_year:
+                        dict_author_year[author_id] = [year]
+                    else:
+                        dict_author_year[author_id] += [year]
+
+        #Create author-year matrix
+        print "\tCreating author-year matrix."
+        author_year_matrix = lil_matrix((max_author + 1, nValidYearSpan))
+        for author_id in dict_author_year.iterkeys():
+            allYears = dict_author_year[author_id]
+            for year in allYears:
+                author_year_matrix[author_id, year - MinValidYear] += 1
+
+        print "\tWriting into serialization files related to author_year."
+        cPickle.dump(author_year_matrix,
+                     open(serialization_dir + author_year_matrix_file, "wb"), 2)
+
+    return author_year_matrix
