@@ -1,6 +1,9 @@
+# Raw data
 author_file = './data/author.csv'
 paper_author_file = './data/paper_author.csv'
+paper_file = './data/paper.csv'
 
+# Serialized files
 serialization_dir = './serialization/'
 
 name_statistics_file = 'name_statistics_seal'
@@ -13,8 +16,11 @@ duplicate_groups_file = "duplicate_groups_seal"
 
 
 coauthor_matrix_file = 'coauthor_seal'
+covenue_matrix_file = 'covenue_seal'
 author_paper_matrix_file = 'author_paper_seal'
 author_affli_matrix_file = 'author_affli_matrix_seal'
+author_venue_matrix_file = 'author_venue_seal'
+author_year_matrix_file = 'author_year_matrix_seal'
 
 organization_count_threshold = 10000
 merge_threshold = 0.00000000001
