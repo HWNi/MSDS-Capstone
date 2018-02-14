@@ -40,5 +40,5 @@ merge_threshold = 0.00000000001
 
 # PubMed
 max_author = 5232561 # Max Author id in sample
-max_paper = 259928577 # Max paper id
+max_paper = 25928577 # Max paper id
 max_affiliation = 83224 # Max affliation id

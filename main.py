@@ -1,6 +1,7 @@
 from calcSimScore import *
 from string_based_cluster import *
 from meta_path import *
+from post_process import *
 import cPickle
 
 if __name__ == '__main__':
