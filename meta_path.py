@@ -415,7 +415,7 @@ def compute_similarity_score(author_A, author_B, metapaths):
         # 1000 * normalized_feature_A[6].multiply(normalized_feature_B[3]).sum(),
         # 100000 * normalized_feature_A[4].multiply(normalized_feature_B[4]).sum(),  # APK
         # 10000000 * normalized_feature_A[5].multiply(normalized_feature_B[5]).sum(),  # AO
-        1000 * normalized_feature_A[4].multiply(normalized_feature_B[6]).sum(),  # APAPA
+        1000 * normalized_feature_A[4].multiply(normalized_feature_B[4]).sum(),  # APAPA
         # 1000 * normalized_feature_A[7].multiply(normalized_feature_B[7]).sum(),  # APKPA
         # 1000 * normalized_feature_A[8].multiply(normalized_feature_B[8]).sum(),  # APAPV
         # 1 * normalized_feature_A[9].multiply(normalized_feature_B[9]).sum(),  # AY
