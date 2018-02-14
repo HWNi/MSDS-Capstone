@@ -31,7 +31,7 @@ author_word_matrix_file = 'author_word_seal'
 
 organization_count_threshold = 10000
 merge_threshold = 0.00000000001
-word_title_count_threshold = 1200
+word_title_count_threshold = 2000
 
 # New Data
 max_author = 1834 # Max Author id in sample
