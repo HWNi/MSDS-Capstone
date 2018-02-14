@@ -1,11 +1,11 @@
 # Raw data
-# author_file = './data/author.csv'
-# paper_author_file = './data/paper_author.csv'
-# paper_file = './data/paper.csv'
+author_file = './data/author_new.csv'
+paper_author_file = './data/paper_author.csv'
+paper_file = './data/paper_withJconfIds.csv'
 
 # PubMed
-author_file = './data/PubMed/Author_refined_simple_sample_withAfId.csv'
-paper_author_file = './data/PubMed/PaperAuthor_sample.csv'
+# author_file = './data/PubMed/Author_refined_simple_sample_withAfId.csv'
+# paper_author_file = './data/PubMed/PaperAuthor_sample.csv'
 # paper_file = './data/paper.csv'
 
 
@@ -31,14 +31,15 @@ author_word_matrix_file = 'author_word_seal'
 
 organization_count_threshold = 10000
 merge_threshold = 0.00000000001
+word_title_count_threshold = 1200
 
 # New Data
-# max_author = 1398618 # Max Author id in sample
-# max_paper = 1755014 # Max paper id
-# # max_affiliation =  # Max affliation id
-# max_conference = 835 # Max conference id
+max_author = 1834 # Max Author id in sample
+max_paper = 1755014 # Max paper id
+# max_affiliation =  # Max affliation id
+max_conference = 835 # Max conference id
 
 # PubMed
-max_author = 5232561 # Max Author id in sample
-max_paper = 25928577 # Max paper id
-max_affiliation = 83224 # Max affliation id
+# max_author = 5232561 # Max Author id in sample
+# max_paper = 25928577 # Max paper id
+# max_affiliation = 83224 # Max affliation id
