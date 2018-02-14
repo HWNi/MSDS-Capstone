@@ -13,8 +13,7 @@ duplicate_author_dict = {}
 class Metapaths(object):
     """Keeping metapaths features for computing similarity between author id pairs."""
 
-    #def __init__(self, AP, APV, APW, AO, AY, APA, APVPA, APAPA, APAPV):
-    def __init__(self, AP, APV, APW, AY, APA, APVPA, APAPA, APAPV):
+    def __init__(self, AP, APV, APW, AO, AY, APA, APVPA, APAPA, APAPV):
         #AP: author-paper
         #APV: author-venue
         #APW: author-paper-titleword
@@ -27,7 +26,7 @@ class Metapaths(object):
         self.AP = AP
         self.APV = APV
         self.APW = APW
-        #self.AO = AO
+        self.AO = AO
         self.AY = AY
         self.APA = APA
         self.APVPA = APVPA
@@ -78,9 +77,10 @@ def load_files():
         load_covenue_files(id_name_dict, author_paper_matrix, all_author_paper_matrix)
     author_word_matrix = load_author_word_files(id_name_dict, author_paper_matrix)
     #author_key_word_matrix = load_author_keyword_files(author_paper_matrix, all_author_paper_matrix)
+    author_org_matrix = load_author_affili_matrix_files()
     author_year_matrix = load_author_year_matrix_files()
     APAPC = coauthor_matrix * author_venue_matrix
-    metapaths = Metapaths(author_paper_matrix, author_venue_matrix, author_word_matrix,
+    metapaths = Metapaths(author_paper_matrix, author_venue_matrix, author_word_matrix, author_org_matrix,
                           author_year_matrix, coauthor_matrix, covenue_matrix, coauthor_2hop_matrix,
                           APAPC)
     return (name_instance_dict, id_name_dict, name_statistics, author_paper_stat, metapaths)
@@ -726,134 +726,134 @@ def load_author_word_files(id_name_dict, author_paper_matrix):
     return author_word_matrix
 
 
-# def load_author_affili_matrix_files():
-#     """Load author-affiliation(organization) relationship."""
-#     if os.path.isfile(serialization_dir + author_affli_matrix_file):
-#         print "\tSerialization files related to author_affiliation exist."
-#         print "\tReading in the serialization files.\n"
-#         author_affi_matrix = cPickle.load(open(
-#             serialization_dir + author_affli_matrix_file, "rb"))
-#     else:
-#         print "\tSerialization files related to author_affiliation do not exist."
-#         dict_author_affi = dict()
-#         dict_affi = dict()
-#         cnt_affi = 1
-#         cnt_line = 0
-#         word_count = {}
-#         with open(author_file, 'rb') as csv_file:
-#             author_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
-#             next(author_reader)
-#             for row in author_reader:
-#                 author_affili = row[2].strip().lower()
-#                 author_affilis = re.sub('[^a-zA-Z ]', ' ', author_affili)
-#                 words = author_affilis.split()
-#                 for word in words:
-#                     if word != '':
-#                         word_count[word] = word_count.setdefault(word, 0) + 1
-#         with open(paper_author_file, 'rb') as csv_file:
-#             paper_author_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
-#             next(paper_author_reader)
-#             for row in paper_author_reader:
-#                 cnt_line += 1
-#                 if cnt_line % 2000000 == 0:
-#                     print "\tFinish analysing " + str(cnt_line) + " lines of the file."
-#                 author_id = int(row[1])
-#                 author_affili = row[3].strip().lower()
-#                 author_affilis = re.sub('[^a-zA-Z ]', ' ', author_affili)
-#                 words = author_affilis.split()
-#                 for word in words:
-#                     if word != '':
-#                         word_count[word] = word_count.setdefault(word, 0) + 1
-#
-#         word_list = list(word_count.iterkeys())
-#         # View high frequent words as stopwords
-#         for word in word_list:
-#             if word_count[word] > organization_count_threshold:
-#                 del word_count[word]
-#         sorted_ = sorted(word_count.items(), key=lambda x: -x[1])
-#         print sorted_[0:20]
-#         with open(author_file, 'rb') as csv_file:
-#             author_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
-#             next(author_reader)
-#             for row in author_reader:
-#                 cnt_line += 1
-#                 if cnt_line % 40000 == 0:
-#                     print "\tFinish analysing " + str(cnt_line) + " lines of the file."
-#                 author_id = int(row[0])
-#                 if author_id in duplicate_author_dict:
-#                     duplicate_authors = duplicate_author_dict[author_id]
-#                 else:
-#                     duplicate_authors = list()
-#                 author_affili = row[2].strip().lower()
-#                 if author_affili != '':
-#                     author_affilis = re.sub('[^a-zA-Z ]', ' ', author_affili)
-#                     words = author_affilis.split()
-#                     for word in words:
-#                         if word == '':
-#                             continue
-#                         if word in word_count:
-#                             if word not in dict_affi:
-#                                 dict_affi[word] = cnt_affi
-#                                 cnt_affi += 1
-#                             dict_author_affi.setdefault(author_id, list()).append(word)
-#                             for id in duplicate_authors:
-#                                 dict_author_affi.setdefault(id, list()).append(word)
-#         with open(paper_author_file, 'rb') as csv_file:
-#             paper_author_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
-#             next(paper_author_reader)
-#             for row in paper_author_reader:
-#                 cnt_line += 1
-#                 if cnt_line % 2000000 == 0:
-#                     print "\tFinish analysing " + str(cnt_line) + " lines of the file."
-#                 author_id = int(row[1])
-#                 if author_id in duplicate_author_dict:
-#                     duplicate_authors = duplicate_author_dict[author_id]
-#                 else:
-#                     duplicate_authors = list()
-#                 author_affili = row[3].strip().lower()
-#                 if author_affili != '':
-#                     author_affilis = re.sub('[^a-zA-Z ]', ' ', author_affili)
-#                     words = author_affilis.split()
-#                     for word in words:
-#                         if word == '':
-#                             continue
-#                         if word in word_count:
-#                             if word not in dict_affi:
-#                                 dict_affi[word] = cnt_affi
-#                                 cnt_affi += 1
-#                             dict_author_affi.setdefault(author_id, list()).append(word)
-#                             for id in duplicate_authors:
-#                                 dict_author_affi.setdefault(id, list()).append(word)
-#         #nUniqueAffi is the number of unique affliations
-#         nUniqueAffi = cnt_affi
-#
-#         #Create author-affiliation matrix
-#         print "\tCreating author-affiliation matrix."
-#         author_affi_matrix = lil_matrix((max_author + 1, nUniqueAffi + 1))
-#         for author_id in dict_author_affi.iterkeys():
-#             author_affi = dict_author_affi[author_id]
-#             for affi in author_affi:
-#                 author_affi_matrix[author_id, dict_affi[affi]] += 1
-#
-#         author_affi_matrix = author_affi_matrix.tocsr()
-#         print "\tWriting into serialization files related to author_affi.\n"
-#         cPickle.dump(author_affi_matrix,
-#                      open(serialization_dir + author_affli_matrix_file, "wb"), 2)
-#
-#         ## Summary: sorted_affi_freq and sorted_affiName
-#         #sort the frequency of each affiliation from high to low.
-#         #sorted_affiName (a list) stores the corresponding affiliation names
-#
-#         # sorted_affiName = sorted(dict_affi_frequency, key=dict_affi_frequency.get, reverse=True)
-#         # sorted_affi_freq = range(0, len(sorted_affiName))
-#         # for i in range(0, len(sorted_affiName)):
-#         #     sorted_affi_freq[i] = dict_affi_frequency[sorted_affiName[i]]
-#
-#         #you can see the frequency of a certain affiliation.
-#         #Most common one is '' (none)
-#         #return (author_affi_matrix, sorted_affiName, sorted_affi_freq)
-#
-#     return author_affi_matrix
+def load_author_affili_matrix_files():
+    """Load author-affiliation(organization) relationship."""
+    if os.path.isfile(serialization_dir + author_affli_matrix_file):
+        print "\tSerialization files related to author_affiliation exist."
+        print "\tReading in the serialization files.\n"
+        author_affi_matrix = cPickle.load(open(
+            serialization_dir + author_affli_matrix_file, "rb"))
+    else:
+        print "\tSerialization files related to author_affiliation do not exist."
+        dict_author_affi = dict()
+        dict_affi = dict()
+        cnt_affi = 1
+        cnt_line = 0
+        word_count = {}
+        with open(author_file, 'rb') as csv_file:
+            author_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
+            next(author_reader)
+            for row in author_reader:
+                author_affili = row[2].strip().lower()
+                author_affilis = re.sub('[^a-zA-Z ]', ' ', author_affili)
+                words = author_affilis.split()
+                for word in words:
+                    if word != '':
+                        word_count[word] = word_count.setdefault(word, 0) + 1
+        with open(paper_author_file, 'rb') as csv_file:
+            paper_author_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
+            next(paper_author_reader)
+            for row in paper_author_reader:
+                cnt_line += 1
+                if cnt_line % 2000000 == 0:
+                    print "\tFinish analysing " + str(cnt_line) + " lines of the file."
+                author_id = int(row[4])
+                author_affili = row[3].strip().lower()
+                author_affilis = re.sub('[^a-zA-Z ]', ' ', author_affili)
+                words = author_affilis.split()
+                for word in words:
+                    if word != '':
+                        word_count[word] = word_count.setdefault(word, 0) + 1
+
+        word_list = list(word_count.iterkeys())
+        # View high frequent words as stopwords
+        for word in word_list:
+            if word_count[word] > organization_count_threshold:
+                del word_count[word]
+        sorted_ = sorted(word_count.items(), key=lambda x: -x[1])
+        print sorted_[0:20]
+        with open(author_file, 'rb') as csv_file:
+            author_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
+            next(author_reader)
+            for row in author_reader:
+                cnt_line += 1
+                if cnt_line % 40000 == 0:
+                    print "\tFinish analysing " + str(cnt_line) + " lines of the file."
+                author_id = int(row[0])
+                if author_id in duplicate_author_dict:
+                    duplicate_authors = duplicate_author_dict[author_id]
+                else:
+                    duplicate_authors = list()
+                author_affili = row[2].strip().lower()
+                if author_affili != '':
+                    author_affilis = re.sub('[^a-zA-Z ]', ' ', author_affili)
+                    words = author_affilis.split()
+                    for word in words:
+                        if word == '':
+                            continue
+                        if word in word_count:
+                            if word not in dict_affi:
+                                dict_affi[word] = cnt_affi
+                                cnt_affi += 1
+                            dict_author_affi.setdefault(author_id, list()).append(word)
+                            for id in duplicate_authors:
+                                dict_author_affi.setdefault(id, list()).append(word)
+        with open(paper_author_file, 'rb') as csv_file:
+            paper_author_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
+            next(paper_author_reader)
+            for row in paper_author_reader:
+                cnt_line += 1
+                if cnt_line % 2000000 == 0:
+                    print "\tFinish analysing " + str(cnt_line) + " lines of the file."
+                author_id = int(row[4])
+                if author_id in duplicate_author_dict:
+                    duplicate_authors = duplicate_author_dict[author_id]
+                else:
+                    duplicate_authors = list()
+                author_affili = row[3].strip().lower()
+                if author_affili != '':
+                    author_affilis = re.sub('[^a-zA-Z ]', ' ', author_affili)
+                    words = author_affilis.split()
+                    for word in words:
+                        if word == '':
+                            continue
+                        if word in word_count:
+                            if word not in dict_affi:
+                                dict_affi[word] = cnt_affi
+                                cnt_affi += 1
+                            dict_author_affi.setdefault(author_id, list()).append(word)
+                            for id in duplicate_authors:
+                                dict_author_affi.setdefault(id, list()).append(word)
+        #nUniqueAffi is the number of unique affliations
+        nUniqueAffi = cnt_affi
+
+        #Create author-affiliation matrix
+        print "\tCreating author-affiliation matrix."
+        author_affi_matrix = lil_matrix((max_author + 1, nUniqueAffi + 1))
+        for author_id in dict_author_affi.iterkeys():
+            author_affi = dict_author_affi[author_id]
+            for affi in author_affi:
+                author_affi_matrix[author_id, dict_affi[affi]] += 1
+
+        author_affi_matrix = author_affi_matrix.tocsr()
+        print "\tWriting into serialization files related to author_affi.\n"
+        cPickle.dump(author_affi_matrix,
+                     open(serialization_dir + author_affli_matrix_file, "wb"), 2)
+
+        ## Summary: sorted_affi_freq and sorted_affiName
+        #sort the frequency of each affiliation from high to low.
+        #sorted_affiName (a list) stores the corresponding affiliation names
+
+        # sorted_affiName = sorted(dict_affi_frequency, key=dict_affi_frequency.get, reverse=True)
+        # sorted_affi_freq = range(0, len(sorted_affiName))
+        # for i in range(0, len(sorted_affiName)):
+        #     sorted_affi_freq[i] = dict_affi_frequency[sorted_affiName[i]]
+
+        #you can see the frequency of a certain affiliation.
+        #Most common one is '' (none)
+        #return (author_affi_matrix, sorted_affiName, sorted_affi_freq)
+
+    return author_affi_matrix
 
 
 def load_author_year_matrix_files():

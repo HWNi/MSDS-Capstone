@@ -1,4 +1,5 @@
 from meta_path import *
+import os
 
 def find_conflict_name(authors_duplicates_dict, name_instance_dict, id_name_dict, name_statistics):
     """Find author ids whose duplicate author list contain conflicts in terms of their names"""
@@ -350,3 +351,27 @@ def final_filter(author_paper_stat, name_statistics, authors_duplicates_dict, na
                 authors_duplicates_dict[author_id].remove(id)
         if author_id not in author_paper_stat or author_paper_stat[author_id] == 0:
             authors_duplicates_dict[author_id] = set()
+
+
+def save_result(authors_duplicates_dict, name_instance_dict, id_name_dict):
+    """Generate the submission file and fullname file for analysis."""
+    directory = os.path.dirname(duplicate_authors_file)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    with open(duplicate_authors_file, 'wb') as result_file:
+        result_file.write("AuthorId,DuplicateAuthorIds" + '\n')
+        for author_id in sorted(authors_duplicates_dict.iterkeys()):
+            result_file.write(str(author_id) + ',' + str(author_id))
+            id_list = sorted(authors_duplicates_dict[author_id])
+            for id in id_list:
+                result_file.write(' ' + str(id))
+            result_file.write('\n')
+
+    with open(duplicate_authors_full_name_file, 'wb') as result_file:
+        for author_id in sorted(authors_duplicates_dict.iterkeys()):
+            result_file.write(id_name_dict[author_id][1]
+                              + ' ' + str(author_id))
+            id_list = sorted(authors_duplicates_dict[author_id])
+            for id in id_list:
+                result_file.write(', ' + id_name_dict[id][1] + ' ' + str(id))
+            result_file.write('\n')

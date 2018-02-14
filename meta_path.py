@@ -358,7 +358,7 @@ def compute_similarity_score(author_A, author_B, metapaths):
                      metapaths.APV.getrow(author_A),
                      metapaths.APVPA.getrow(author_A),
                      #metapaths.APK.getrow(author_A),
-                     #metapaths.AO.getrow(author_A),
+                     metapaths.AO.getrow(author_A),
                      metapaths.APAPA.getrow(author_A),
                      metapaths.APAPV.getrow(author_A),
                      metapaths.AY.getrow(author_A),
@@ -368,8 +368,8 @@ def compute_similarity_score(author_A, author_B, metapaths):
             normalize(feature_A[1], norm='l2', axis=1),
             normalize(feature_A[2], norm='l2', axis=1),
             normalize(feature_A[3], norm='l2', axis=1),
-            normalize(feature_A[4], norm='l2', axis=1))
-            # normalize(feature_A[5], norm='l2', axis=1),
+            normalize(feature_A[4], norm='l2', axis=1),
+            normalize(feature_A[5], norm='l2', axis=1))
             # normalize(feature_A[6], norm='l2', axis=1))
         # normalize(feature_A[7], norm='l2', axis=1),
         # normalize(feature_A[8], norm='l2', axis=1),
@@ -385,7 +385,7 @@ def compute_similarity_score(author_A, author_B, metapaths):
                      metapaths.APV.getrow(author_B),
                      metapaths.APVPA.getrow(author_B),
                      # metapaths.APK.getrow(author_B),
-                     # metapaths.AO.getrow(author_B),
+                     metapaths.AO.getrow(author_B),
                      metapaths.APAPA.getrow(author_B),
                      metapaths.APAPV.getrow(author_B),
                      metapaths.AY.getrow(author_B),
@@ -395,8 +395,8 @@ def compute_similarity_score(author_A, author_B, metapaths):
             normalize(feature_B[1], norm='l2', axis=1),
             normalize(feature_B[2], norm='l2', axis=1),
             normalize(feature_B[3], norm='l2', axis=1),
-            normalize(feature_B[4], norm='l2', axis=1))
-        # normalize(feature_B[5], norm='l2', axis=1),
+            normalize(feature_B[4], norm='l2', axis=1),
+            normalize(feature_B[5], norm='l2', axis=1))
         # normalize(feature_B[6], norm='l2', axis=1))
         # normalize(feature_B[7], norm='l2', axis=1),
         # normalize(feature_B[8], norm='l2', axis=1),
@@ -414,8 +414,8 @@ def compute_similarity_score(author_A, author_B, metapaths):
         # 1000 * normalized_feature_A[3].multiply(normalized_feature_B[6]).sum(),
         # 1000 * normalized_feature_A[6].multiply(normalized_feature_B[3]).sum(),
         # 100000 * normalized_feature_A[4].multiply(normalized_feature_B[4]).sum(),  # APK
-        # 10000000 * normalized_feature_A[5].multiply(normalized_feature_B[5]).sum(),  # AO
-        1000 * normalized_feature_A[4].multiply(normalized_feature_B[4]).sum(),  # APAPA
+        10000000 * normalized_feature_A[4].multiply(normalized_feature_B[4]).sum(),  # AO
+        1000 * normalized_feature_A[5].multiply(normalized_feature_B[5]).sum(),  # APAPA
         # 1000 * normalized_feature_A[7].multiply(normalized_feature_B[7]).sum(),  # APKPA
         # 1000 * normalized_feature_A[8].multiply(normalized_feature_B[8]).sum(),  # APAPV
         # 1 * normalized_feature_A[9].multiply(normalized_feature_B[9]).sum(),  # AY
