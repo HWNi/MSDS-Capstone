@@ -407,15 +407,15 @@ def compute_similarity_score(author_A, author_B, metapaths):
         normalized_feature_B = normalized_feature_dict[author_B]
 
     similarity = (
-        1000000 * normalized_feature_A[0].multiply(normalized_feature_B[0]).sum(),  # same paper
-        100000 * normalized_feature_A[1].multiply(normalized_feature_B[1]).sum(),  # APA
-        100000 * normalized_feature_A[2].multiply(normalized_feature_B[2]).sum(),  # AV
-        1000 * normalized_feature_A[3].multiply(normalized_feature_B[3]).sum(),  # AVA
+        normalized_feature_A[0].multiply(normalized_feature_B[0]).sum(),  # same paper
+        normalized_feature_A[1].multiply(normalized_feature_B[1]).sum(),  # APA
+        normalized_feature_A[2].multiply(normalized_feature_B[2]).sum(),  # AV
+        normalized_feature_A[3].multiply(normalized_feature_B[3]).sum(),  # AVA
         # 1000 * normalized_feature_A[3].multiply(normalized_feature_B[6]).sum(),
         # 1000 * normalized_feature_A[6].multiply(normalized_feature_B[3]).sum(),
         # 100000 * normalized_feature_A[4].multiply(normalized_feature_B[4]).sum(),  # APK
-        10000000 * normalized_feature_A[4].multiply(normalized_feature_B[4]).sum(),  # AO
-        1000 * normalized_feature_A[5].multiply(normalized_feature_B[5]).sum(),  # APAPA
+        normalized_feature_A[4].multiply(normalized_feature_B[4]).sum(),  # AO
+        normalized_feature_A[5].multiply(normalized_feature_B[5]).sum(),  # APAPA
         # 1000 * normalized_feature_A[7].multiply(normalized_feature_B[7]).sum(),  # APKPA
         # 1000 * normalized_feature_A[8].multiply(normalized_feature_B[8]).sum(),  # APAPV
         # 1 * normalized_feature_A[9].multiply(normalized_feature_B[9]).sum(),  # AY
@@ -461,13 +461,17 @@ def local_clustering(similarity_dict, potential_duplicate_groups, author_paper_s
 
         if potential_duplicate_group not in similarity_dict:
             similarity = compute_similarity_score(author_A, author_B, metapaths)
+            if max(similarity) == merge_threshold:
+                print("Removing:", potential_duplicate_group)
+                potential_duplicate_groups.remove(potential_duplicate_group)
+                continue
             similarity_dict[potential_duplicate_group] = max(similarity)
             statistic[similarity.index(max(similarity))] += 1
 
     # Sort author pairs based on their similarity, then merge their name instances if necessary
     sorted_potential_duplicate_groups = sorted(similarity_dict.keys(), key=lambda x: -similarity_dict[x])
     for potential_duplicate_group in sorted_potential_duplicate_groups:
-        if count % 10000 == 0:
+        if count % 1 == 0:
             print "\tFinish merging " \
                 + str(float(count)/len(potential_duplicate_groups)*100) \
                 + "% (" + str(count) + "/" + str(len(potential_duplicate_groups)) \
@@ -496,25 +500,33 @@ def local_clustering(similarity_dict, potential_duplicate_groups, author_paper_s
         name_instance_B = name_instance_dict[id_name_dict[author_A][0]]
 
         # Merge two name instances
+        # Merge two name instances
         if name_A != name_B:
             if len(name_A) <= 10 or len(name_B) <= 10:
                 pass
             elif name_B.replace(' ', '').find(name_A.replace(' ', '')) >= 0 \
                     or name_A.replace(' ', '').find(name_B.replace(' ', '')) >= 0 \
                     or name_A.replace(' ', '') == name_B.replace(' ', '') \
-                    or sorted(name_A.replace(' ', '')) == sorted(name_B.replace(' ', ''))\
-                    or my_string_match_score(name_A, name_B, name_statistics, name_instance_A.is_asian or name_instance_B.is_asian) >= 10:
+                    or sorted(name_A.replace(' ', '')) == sorted(name_B.replace(' ', '')) \
+                    or my_string_match_score(name_A, name_B, name_statistics,
+                                             name_instance_A.is_asian or name_instance_B.is_asian) >= 10:
                 if len(name_A.split()) > len(name_B.split()):
-                    print "\t\tMerge two name instances: " + id_name_dict[author_A][1] + ': ' + str(len(name_instance_dict[name_A].author_ids)) + \
-                          '   <--   ' + id_name_dict[author_B][1] + ': ' + str(len(name_instance_dict[name_B].author_ids))
+                    print "\t\tMerge two name instances: " + id_name_dict[author_A][1] + ': ' + str(
+                        len(name_instance_dict[name_A].author_ids)) + \
+                          '   <--   ' + id_name_dict[author_B][1] + ': ' + str(
+                        len(name_instance_dict[name_B].author_ids))
                     merge_name_instances(name_instance_dict, id_name_dict, author_A, author_B)
                 elif len(name_A.split()) < len(name_B.split()):
-                    print "\t\tMerge two name instances: " + id_name_dict[author_B][1] + ': ' + str(len(name_instance_dict[name_B].author_ids)) + \
-                          '   <--   ' + id_name_dict[author_A][1] + ': ' + str(len(name_instance_dict[name_A].author_ids))
+                    print "\t\tMerge two name instances: " + id_name_dict[author_B][1] + ': ' + str(
+                        len(name_instance_dict[name_B].author_ids)) + \
+                          '   <--   ' + id_name_dict[author_A][1] + ': ' + str(
+                        len(name_instance_dict[name_A].author_ids))
                     merge_name_instances(name_instance_dict, id_name_dict, author_B, author_A)
                 elif len(name_instance_dict[name_A].author_ids) > len(name_instance_dict[name_B].author_ids):
-                    print "\t\tMerge two name instances: " + id_name_dict[author_A][1] + ': ' + str(len(name_instance_dict[name_A].author_ids)) + \
-                          '   <--   ' + id_name_dict[author_B][1] + ': ' + str(len(name_instance_dict[name_B].author_ids))
+                    print "\t\tMerge two name instances: " + id_name_dict[author_A][1] + ': ' + str(
+                        len(name_instance_dict[name_A].author_ids)) + \
+                          '   <--   ' + id_name_dict[author_B][1] + ': ' + str(
+                        len(name_instance_dict[name_B].author_ids))
                     merge_name_instances(name_instance_dict, id_name_dict, author_A, author_B)
 
                 elif len(name_instance_dict[name_A].author_ids) == len(name_instance_dict[name_B].author_ids):
@@ -537,26 +549,37 @@ def local_clustering(similarity_dict, potential_duplicate_groups, author_paper_s
                     else:
                         score_B /= len(elements)
                     if score_A > score_B:
-                        print "\t\tMerge two name instances: " + id_name_dict[author_A][1] + ': ' + str(len(name_instance_dict[name_A].author_ids)) + \
-                              '   <--   ' + id_name_dict[author_B][1] + ': ' + str(len(name_instance_dict[name_B].author_ids))
+                        print "\t\tMerge two name instances: " + id_name_dict[author_A][1] + ': ' + str(
+                            len(name_instance_dict[name_A].author_ids)) + \
+                              '   <--   ' + id_name_dict[author_B][1] + ': ' + str(
+                            len(name_instance_dict[name_B].author_ids))
                         merge_name_instances(name_instance_dict, id_name_dict, author_A, author_B)
                     elif score_A == score_B:
                         if len(name_B) >= len(name_A):
-                            print "\t\tMerge two name instances: " + id_name_dict[author_A][1] + ': ' + str(len(name_instance_dict[name_A].author_ids)) + \
-                                  '   <--   ' + id_name_dict[author_B][1] + ': ' + str(len(name_instance_dict[name_B].author_ids))
+                            print "\t\tMerge two name instances: " + id_name_dict[author_A][1] + ': ' + str(
+                                len(name_instance_dict[name_A].author_ids)) + \
+                                  '   <--   ' + id_name_dict[author_B][1] + ': ' + str(
+                                len(name_instance_dict[name_B].author_ids))
                             merge_name_instances(name_instance_dict, id_name_dict, author_A, author_B)
                         else:
-                            print "\t\tMerge two name instances: " + id_name_dict[author_B][1] + ': ' + str(len(name_instance_dict[name_B].author_ids)) + \
-                                  '   <--   ' + id_name_dict[author_A][1] + ': ' + str(len(name_instance_dict[name_A].author_ids))
+                            print "\t\tMerge two name instances: " + id_name_dict[author_B][1] + ': ' + str(
+                                len(name_instance_dict[name_B].author_ids)) + \
+                                  '   <--   ' + id_name_dict[author_A][1] + ': ' + str(
+                                len(name_instance_dict[name_A].author_ids))
                             merge_name_instances(name_instance_dict, id_name_dict, author_B, author_A)
                     else:
-                        print "\t\tMerge two name instances: " + id_name_dict[author_B][1] + ': ' + str(len(name_instance_dict[name_B].author_ids)) + \
-                              '   <--   ' + id_name_dict[author_A][1] + ': ' + str(len(name_instance_dict[name_A].author_ids))
+                        print "\t\tMerge two name instances: " + id_name_dict[author_B][1] + ': ' + str(
+                            len(name_instance_dict[name_B].author_ids)) + \
+                              '   <--   ' + id_name_dict[author_A][1] + ': ' + str(
+                            len(name_instance_dict[name_A].author_ids))
                         merge_name_instances(name_instance_dict, id_name_dict, author_B, author_A)
                 else:
-                    print "\t\tMerge two name instances: " + id_name_dict[author_B][1] + ': ' + str(len(name_instance_dict[name_B].author_ids)) + \
-                          '   <--   ' + id_name_dict[author_A][1] + ': ' + str(len(name_instance_dict[name_A].author_ids))
+                    print "\t\tMerge two name instances: " + id_name_dict[author_B][1] + ': ' + str(
+                        len(name_instance_dict[name_B].author_ids)) + \
+                          '   <--   ' + id_name_dict[author_A][1] + ': ' + str(
+                        len(name_instance_dict[name_A].author_ids))
                     merge_name_instances(name_instance_dict, id_name_dict, author_B, author_A)
+
 
         real_duplicate_groups.add(potential_duplicate_group)
 
