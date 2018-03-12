@@ -1,57 +1,74 @@
-from io import *
-from string_based_cluster import *
+from pre_processing import *
+from string_based import *
+from meta_path import *
+from post_process import *
 import cPickle
 
-
-class Metapaths(object):
-    """Keeping metapaths features for computing similarity between author id pairs."""
-
-    def __init__(self, AP, APV, APW, APK, AO, AY, APA, APVPA, APAPA, APAPV):
-        # AP: author-paper
-        # APV: author-venue
-        # APW: author-paper-titleword
-        # APK: author-paper-keyword
-        # AO: author-orgnization
-        # AY: author-year
-        # APA: author-paper-venue
-        # APVPA: author-venue-author
-        # APAPA: author-paper-author-paper-author
-        # APAPV: author-paper-author-paper-venue
-        self.AP = AP
-        self.APV = APV
-        self.APW = APW
-        self.APK = APK
-        self.AO = AO
-        self.AY = AY
-        self.APA = APA
-        self.APVPA = APVPA
-        self.APAPA = APAPA
-        self.APAPV = APAPV
-
 if __name__ == '__main__':
-    csv.field_size_limit(500 * 1024 * 1024)
+    generate_new_author_names()
 
-    print "Step 1/7: Load files"
-    (name_statistics, raw_name_statistics, name_statistics_super, author_paper_stat) = load_name_statistic()
-    (name_instance_dict, id_name_dict, name_statistics) = load_author_files(name_statistics, raw_name_statistics,
-                                                                            name_statistics_super, author_paper_stat)
-    print "\nStep 2/7: Find similar ids to increase recall"
+    name_statistics = dict()
+    name_statistics = cal_name_statistics(name_statistics, author_file, 1)
+    name_statistics = cal_name_statistics(name_statistics, paper_author_file, 2)
+
+    print "Generate name instance"
+    (name_instance_dict, id_name_dict) = generate_name_instance(author_file, 0, 1, name_statistics)
+
+    print "Update name statistics"
+    for name_instance in list(name_instance_dict.itervalues()):
+        elements = name_instance.name.split()
+        for element in elements:
+            name_statistics[element] = name_statistics.setdefault(element, 0) + len(name_instance.author_ids)
+        for element1 in elements:
+            for element2 in elements:
+                if element1 != element2:
+                    name_statistics[element1 + ' ' + element2] = \
+                        name_statistics.setdefault(element1 + ' ' + element2, 0) + len(name_instance.author_ids)
+
+    print "Enlarge candidate pool of duplicates based on author name similarity"
     add_similar_ids_under_name(name_instance_dict, id_name_dict)
 
-    print "\nStep 3/7: Create local clusters or potential_duplicate_groups"
-    potential_duplicate_groups = create_potential_duplicate_groups(name_instance_dict, author_paper_stat)
+    print "Saving files generated in this step for debug."
+    directory = os.path.dirname(serialization_dir)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    cPickle.dump(name_instance_dict, open(serialization_dir + name_instance_file, "wb"), 2)
 
-    print "\nStep 4/7: Find and merge local clusters"
+    print "Create local clusters or potential_duplicate_groups"
+    potential_duplicate_groups = create_potential_duplicate_groups(name_instance_dict)
+
+    print "Calculate similarity matrices"
+    (author_paper_matrix, all_author_paper_matrix, coauthor_matrix, coauthor_2hop_matrix, name_instance_dict,id_name_dict) \
+        = load_coauthor_files(name_instance_dict, id_name_dict)
+
+    (covenue_matrix, author_venue_matrix) = load_covenue_files(id_name_dict, author_paper_matrix, all_author_paper_matrix)
+    author_word_matrix = load_author_word_files(id_name_dict, author_paper_matrix)
+
+    author_org_matrix = load_author_affili_matrix_files()
+
+    author_year_matrix = load_author_year_matrix_files()
+
+    APAPC = coauthor_matrix * author_venue_matrix
+
+    metapaths = Metapaths(author_paper_matrix, author_venue_matrix, author_word_matrix, author_org_matrix,
+                          author_year_matrix, coauthor_matrix, covenue_matrix, coauthor_2hop_matrix, APAPC)
+
+    print "Find and merge local clusters"
     similarity_score_dict = dict()
-    real_duplicate_groups1 = local_clustering(similarity_score_dict, potential_duplicate_groups, author_paper_stat,
+    potential_duplicate_groups = list(potential_duplicate_groups)
+    real_duplicate_groups = local_clustering(similarity_score_dict, potential_duplicate_groups,
                                               name_instance_dict, id_name_dict, name_statistics, metapaths)
-    real_duplicate_groups2 = local_clustering(similarity_score_dict, potential_duplicate_groups, author_paper_stat,
-                                              name_instance_dict, id_name_dict, name_statistics, metapaths)
-    real_duplicate_groups = real_duplicate_groups1.union(real_duplicate_groups2)
 
-    print "\nStep 5/7: Obtain the closure, then filter noisy names"
+
+    print "Obtain the closure, then filter noisy names"
     authors_duplicates_dict = merge_local_clusters(real_duplicate_groups, id_name_dict)
+
+    cPickle.dump(authors_duplicates_dict, open(serialization_dir + "authors_duplicates_dict_seal", "wb"), 2)
+
     find_closure(authors_duplicates_dict)
+
+    cPickle.dump(authors_duplicates_dict, open(serialization_dir + "authors_duplicates_dict_closure_seal", "wb"), 2)
+
     refine_result(authors_duplicates_dict, name_instance_dict, id_name_dict, name_statistics, similarity_score_dict,
                   metapaths, True)
     iter_num = 2
@@ -61,9 +78,5 @@ if __name__ == '__main__':
                       metapaths, True)
         iter_num -= 1
 
-    print "\nStep 6/7: Final filtering and combining multiple possible guessing"
-    final_filter(author_paper_stat, name_statistics, authors_duplicates_dict, name_instance_dict, id_name_dict,
-                 similarity_score_dict, metapaths)
-
-    print "\nStep 7/7: Generate submission files"
+    print "Generate submission files"
     save_result(authors_duplicates_dict, name_instance_dict, id_name_dict)
