@@ -1,5 +1,4 @@
 #-*- coding: UTF-8 -*-
-import itertools
 import re
 from taiwan import *
 from chinese import *

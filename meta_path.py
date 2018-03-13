@@ -1,33 +1,24 @@
-import csv
-import cPickle
-import os
-import re
-
-from difflib import SequenceMatcher
 from scipy.sparse import lil_matrix
 from sklearn.preprocessing import normalize
-
-from custom_setting import *
 from string_based import *
 from name import *
 
 duplicate_author_dict = {}
 normalized_feature_dict = {}
 
-
 class Metapaths(object):
     # Keep metapaths features for computing similarity between author id pairs.
 
     def __init__(self, AP, APV, APW, AO, AY, APA, APVPA, APAPA, APAPV):
-        self.AP = AP # AP: author-paper
-        self.APV = APV # APV: author-venue
-        self.APW = APW # APW: author-paper-titleword
-        self.AO = AO # AO: author-orgnization
-        self.AY = AY # AY: author-year
-        self.APA = APA #  APA: author-paper-author
-        self.APVPA = APVPA # APVPA: author-venue-author
-        self.APAPA = APAPA # APAPA: author-paper-author-paper-author
-        self.APAPV = APAPV # APAPV: author-paper-author-paper-venue
+        self.AP = AP    # AP: author-paper
+        self.APV = APV  # APV: author-venue
+        self.APW = APW  # APW: author-paper-titleword
+        self.AO = AO    # AO: author-orgnization
+        self.AY = AY    # AY: author-year
+        self.APA = APA  # APA: author-paper-author
+        self.APVPA = APVPA  # APVPA: author-venue-author
+        self.APAPA = APAPA  # APAPA: author-paper-author-paper-author
+        self.APAPV = APAPV  # APAPV: author-paper-author-paper-venue
 
 
 def load_coauthor_files(name_instance_dict, id_name_dict):
@@ -59,11 +50,11 @@ def load_coauthor_files(name_instance_dict, id_name_dict):
     coauthor_matrix = author_paper_matrix * all_author_paper_matrix.transpose()
     coauthor_2hop_matrix = coauthor_matrix * coauthor_matrix.transpose()
 
-    return (author_paper_matrix, all_author_paper_matrix, coauthor_matrix, coauthor_2hop_matrix, name_instance_dict, id_name_dict)
+    return author_paper_matrix, all_author_paper_matrix, coauthor_matrix, coauthor_2hop_matrix, name_instance_dict, id_name_dict
 
 
 def load_covenue_files(author_paper_matrix):
-    """Load covenue relationship."""
+    # Load covenue relationship
     paper_venue_matrix = lil_matrix((max_paper + 1, max_conference+ 1))
     with open(paper_file, 'rb') as csv_file:
         paper_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
@@ -78,18 +69,17 @@ def load_covenue_files(author_paper_matrix):
     author_venue_matrix = author_paper_matrix * paper_venue_matrix
     covenue_matrix = author_venue_matrix * author_venue_matrix.transpose()
 
-    return (covenue_matrix, author_venue_matrix)
+    return covenue_matrix, author_venue_matrix
 
 
 def load_author_word_files(author_paper_matrix):
-    """Load author-paper-titleword relationship."""
+    # Load author-paper-titleword relationship
     word_statistic_dict = {}
     with open(paper_file, 'rb') as csv_file:
         paper_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
         # skip first line
         next(paper_reader)
         for row in paper_reader:
-            paper_id = int(row[0])
             title = row[1]
             words = title.split(' ')
             for word in words:
@@ -195,6 +185,7 @@ def load_author_affili_matrix_files():
                     word_count[word] = word_count.setdefault(word, 0) + 1
 
     word_list = list(word_count.iterkeys())
+
     # View high frequent words as stopwords
     for word in word_list:
         if word_count[word] > organization_count_threshold:
@@ -248,11 +239,11 @@ def load_author_affili_matrix_files():
                         for id in duplicate_authors:
                             dict_author_affi.setdefault(id, list()).append(word)
 
-    # nUniqueAffi is the number of unique affliations
-    nUniqueAffi = cnt_affi
+    # n_unique_affi is the number of unique affliations
+    n_unique_affi = cnt_affi
 
     # Create author-affiliation matrix
-    author_affi_matrix = lil_matrix((max_author + 1, nUniqueAffi + 1))
+    author_affi_matrix = lil_matrix((max_author + 1, n_unique_affi + 1))
     for author_id in dict_author_affi.iterkeys():
         author_affi = dict_author_affi[author_id]
         for affi in author_affi:
@@ -265,9 +256,9 @@ def load_author_affili_matrix_files():
 
 def load_author_year_matrix_files():
     # Load author-paper-year relationship.
-    MinValidYear = 1900
-    MaxValidYear = 2013
-    nValidYearSpan = MaxValidYear - MinValidYear + 1
+    min_valid_year = 1900
+    max_valid_year = 2013
+    n_valid_year_span = max_valid_year - min_valid_year + 1
 
     dict_paper_year = dict()
     dict_author_year = dict()
@@ -278,7 +269,7 @@ def load_author_year_matrix_files():
         for row in csv_reader:
             paper_id = int(row[0])
             year = int(row[2])
-            if year >= MinValidYear and year <= MaxValidYear:
+            if min_valid_year <= year <= max_valid_year:
                 dict_paper_year[paper_id] = year
 
     with open(paper_author_file, 'rb') as csv_file:
@@ -295,27 +286,27 @@ def load_author_year_matrix_files():
                     dict_author_year[author_id] += [year]
 
     # Create author-year matrix
-    author_year_matrix = lil_matrix((max_author + 1, nValidYearSpan))
+    author_year_matrix = lil_matrix((max_author + 1, n_valid_year_span))
     for author_id in dict_author_year.iterkeys():
         allYears = dict_author_year[author_id]
         for year in allYears:
-            author_year_matrix[author_id, year - MinValidYear] += 1
+            author_year_matrix[author_id, year - min_valid_year] += 1
 
     return author_year_matrix
 
 
-def compute_similarity_score(author_a, author_b, metapaths):
+def compute_similarity_score(author_a, author_b, meta_paths):
     # Compute similarity of two author ids based on metapaths
     if author_a not in normalized_feature_dict:
-        feature__a = (metapaths.AP.getrow(author_a),
-                     metapaths.APA.getrow(author_a),
-                     metapaths.APV.getrow(author_a),
-                     metapaths.APVPA.getrow(author_a),
-                     metapaths.AO.getrow(author_a),
-                     metapaths.APAPA.getrow(author_a),
-                     metapaths.APAPV.getrow(author_a),
-                     metapaths.AY.getrow(author_a),
-                     metapaths.APW.getrow(author_a))
+        feature__a = (meta_paths.AP.getrow(author_a),
+                      meta_paths.APA.getrow(author_a),
+                      meta_paths.APV.getrow(author_a),
+                      meta_paths.APVPA.getrow(author_a),
+                      meta_paths.AO.getrow(author_a),
+                      meta_paths.APAPA.getrow(author_a),
+                      meta_paths.APAPV.getrow(author_a),
+                      meta_paths.AY.getrow(author_a),
+                      meta_paths.APW.getrow(author_a))
         normalized_feature__a = (
             normalize(feature__a[0], norm='l2', axis=1),
             normalize(feature__a[1], norm='l2', axis=1),
@@ -328,15 +319,15 @@ def compute_similarity_score(author_a, author_b, metapaths):
         normalized_feature__a = normalized_feature_dict[author_a]
 
     if author_b not in normalized_feature_dict:
-        feature__b = (metapaths.AP.getrow(author_b),
-                     metapaths.APA.getrow(author_b),
-                     metapaths.APV.getrow(author_b),
-                     metapaths.APVPA.getrow(author_b),
-                     metapaths.AO.getrow(author_b),
-                     metapaths.APAPA.getrow(author_b),
-                     metapaths.APAPV.getrow(author_b),
-                     metapaths.AY.getrow(author_b),
-                     metapaths.APW.getrow(author_a))
+        feature__b = (meta_paths.AP.getrow(author_b),
+                      meta_paths.APA.getrow(author_b),
+                      meta_paths.APV.getrow(author_b),
+                      meta_paths.APVPA.getrow(author_b),
+                      meta_paths.AO.getrow(author_b),
+                      meta_paths.APAPA.getrow(author_b),
+                      meta_paths.APAPV.getrow(author_b),
+                      meta_paths.AY.getrow(author_b),
+                      meta_paths.APW.getrow(author_a))
         normalized_feature__b = (
             normalize(feature__b[0], norm='l2', axis=1),
             normalize(feature__b[1], norm='l2', axis=1),
@@ -387,15 +378,15 @@ def local_clustering(similarity_dict, potential_duplicate_groups, name_instance_
             print "\tStatistic about merges based on different features: " + str(statistic)
         count += 1
 
-        author_A = potential_duplicate_group[0]
-        author_B = potential_duplicate_group[1]
-        name_A = id_name_dict[author_A][0]
-        name_B = id_name_dict[author_B][0]
-        if not name_comparable(name_instance_dict[name_A], name_instance_dict[name_B], name_statistics):
+        author__a = potential_duplicate_group[0]
+        author__b = potential_duplicate_group[1]
+        name__a = id_name_dict[author__a][0]
+        name__b = id_name_dict[author__b][0]
+        if not name_comparable(name_instance_dict[name__a], name_instance_dict[name__b], name_statistics):
             continue
 
         if potential_duplicate_group not in similarity_dict:
-            similarity = compute_similarity_score(author_A, author_B, metapaths)
+            similarity = compute_similarity_score(author__a, author__b, metapaths)
             if max(similarity) == merge_threshold:
                 potential_duplicate_groups.remove(potential_duplicate_group)
                 continue
@@ -413,67 +404,67 @@ def local_clustering(similarity_dict, potential_duplicate_groups, name_instance_
             print "\tStatistic about merges based on different features: " + str(statistic)
         count += 1
 
-        author_A = potential_duplicate_group[0]
-        author_B = potential_duplicate_group[1]
+        author__a = potential_duplicate_group[0]
+        author__b = potential_duplicate_group[1]
 
-        name_A = id_name_dict[author_A][0]
-        name_B = id_name_dict[author_B][0]
+        name__a = id_name_dict[author__a][0]
+        name__b = id_name_dict[author__b][0]
 
-        if name_A == '' or name_B == '':
+        if name__a == '' or name__b == '':
             continue
 
-        if id_name_dict[author_A][0] not in name_instance_dict or id_name_dict[author_B][0] not in name_instance_dict:
+        if id_name_dict[author__a][0] not in name_instance_dict or id_name_dict[author__b][0] not in name_instance_dict:
             continue
 
-        name_instance_A = name_instance_dict[id_name_dict[author_A][0]]
-        name_instance_B = name_instance_dict[id_name_dict[author_A][0]]
+        name_instance__a = name_instance_dict[id_name_dict[author__a][0]]
+        name_instance__b = name_instance_dict[id_name_dict[author__a][0]]
 
         # Merge two name instances
-        if name_A != name_B:
-            if len(name_A) <= 10 or len(name_B) <= 10:
+        if name__a != name__b:
+            if len(name__a) <= 10 or len(name__b) <= 10:
                 pass
-            elif name_B.replace(' ', '').find(name_A.replace(' ', '')) >= 0 \
-                    or name_A.replace(' ', '').find(name_B.replace(' ', '')) >= 0 \
-                    or name_A.replace(' ', '') == name_B.replace(' ', '') \
-                    or sorted(name_A.replace(' ', '')) == sorted(name_B.replace(' ', '')) \
-                    or my_string_match_score(name_A, name_B, name_statistics,
-                                             name_instance_A.is_asian or name_instance_B.is_asian) >= 10:
-                if len(name_A.split()) > len(name_B.split()):
-                    merge_name_instances(name_instance_dict, id_name_dict, author_A, author_B)
-                elif len(name_A.split()) < len(name_B.split()):
-                    merge_name_instances(name_instance_dict, id_name_dict, author_B, author_A)
-                elif len(name_instance_dict[name_A].author_ids) > len(name_instance_dict[name_B].author_ids):
-                    merge_name_instances(name_instance_dict, id_name_dict, author_A, author_B)
-                elif len(name_instance_dict[name_A].author_ids) == len(name_instance_dict[name_B].author_ids):
-                    score_A = 0
-                    elements = name_A.split()
+            elif name__b.replace(' ', '').find(name__a.replace(' ', '')) >= 0 \
+                    or name__a.replace(' ', '').find(name__b.replace(' ', '')) >= 0 \
+                    or name__a.replace(' ', '') == name__b.replace(' ', '') \
+                    or sorted(name__a.replace(' ', '')) == sorted(name__b.replace(' ', '')) \
+                    or my_string_match_score(name__a, name__b, name_statistics,
+                                             name_instance__a.is_asian or name_instance__b.is_asian) >= 10:
+                if len(name__a.split()) > len(name__b.split()):
+                    merge_name_instances(name_instance_dict, id_name_dict, author__a, author__b)
+                elif len(name__a.split()) < len(name__b.split()):
+                    merge_name_instances(name_instance_dict, id_name_dict, author__b, author__a)
+                elif len(name_instance_dict[name__a].author_ids) > len(name_instance_dict[name__b].author_ids):
+                    merge_name_instances(name_instance_dict, id_name_dict, author__a, author__b)
+                elif len(name_instance_dict[name__a].author_ids) == len(name_instance_dict[name__b].author_ids):
+                    score__a = 0
+                    elements = name__a.split()
                     for i in xrange(len(elements) - 1):
                         if elements[i] + ' ' + elements[i + 1] in name_statistics:
-                            score_A += name_statistics[elements[i] + ' ' + elements[i + 1]]
+                            score__a += name_statistics[elements[i] + ' ' + elements[i + 1]]
                     if len(elements) == 1:
-                        score_A = 0
+                        score__a = 0
                     else:
-                        score_A /= len(elements)
-                    score_B = 0
-                    elements = name_B.split()
+                        score__a /= len(elements)
+                    score__b = 0
+                    elements = name__b.split()
                     for i in xrange(len(elements) - 1):
                         if elements[i] + ' ' + elements[i + 1] in name_statistics:
-                            score_B += name_statistics[elements[i] + ' ' + elements[i + 1]]
+                            score__b += name_statistics[elements[i] + ' ' + elements[i + 1]]
                     if len(elements) == 1:
-                        score_B = 0
+                        score__b = 0
                     else:
-                        score_B /= len(elements)
-                    if score_A > score_B:
-                        merge_name_instances(name_instance_dict, id_name_dict, author_A, author_B)
-                    elif score_A == score_B:
-                        if len(name_B) >= len(name_A):
-                            merge_name_instances(name_instance_dict, id_name_dict, author_A, author_B)
+                        score__b /= len(elements)
+                    if score__a > score__b:
+                        merge_name_instances(name_instance_dict, id_name_dict, author__a, author__b)
+                    elif score__a == score__b:
+                        if len(name__b) >= len(name__a):
+                            merge_name_instances(name_instance_dict, id_name_dict, author__a, author__b)
                         else:
-                            merge_name_instances(name_instance_dict, id_name_dict, author_B, author_A)
+                            merge_name_instances(name_instance_dict, id_name_dict, author__b, author__a)
                     else:
-                        merge_name_instances(name_instance_dict, id_name_dict, author_B, author_A)
+                        merge_name_instances(name_instance_dict, id_name_dict, author__b, author__a)
                 else:
-                    merge_name_instances(name_instance_dict, id_name_dict, author_B, author_A)
+                    merge_name_instances(name_instance_dict, id_name_dict, author__b, author__a)
         real_duplicate_groups.add(potential_duplicate_group)
 
     return real_duplicate_groups
