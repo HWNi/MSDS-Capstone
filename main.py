@@ -28,11 +28,6 @@ if __name__ == '__main__':
     print "Enlarge candidate pool of duplicates based on author name similarity"
     add_similar_ids_under_name(name_instance_dict, id_name_dict)
 
-    print "Saving files generated in this step for debug."
-    directory = os.path.dirname(serialization_dir)
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    cPickle.dump(name_instance_dict, open(serialization_dir + name_instance_file, "wb"), 2)
 
     print "Create local clusters or potential_duplicate_groups"
     potential_duplicate_groups = create_potential_duplicate_groups(name_instance_dict)
@@ -63,11 +58,9 @@ if __name__ == '__main__':
     print "Obtain the closure, then filter noisy names"
     authors_duplicates_dict = merge_local_clusters(real_duplicate_groups, id_name_dict)
 
-    cPickle.dump(authors_duplicates_dict, open(serialization_dir + "authors_duplicates_dict_seal", "wb"), 2)
-
     find_closure(authors_duplicates_dict)
 
-    cPickle.dump(authors_duplicates_dict, open(serialization_dir + "authors_duplicates_dict_closure_seal", "wb"), 2)
+    cPickle.dump(authors_duplicates_dict, open(serialization_dir + "authors_duplicates_dict_seal", "wb"), 2)
 
     refine_result(authors_duplicates_dict, name_instance_dict, id_name_dict, name_statistics, similarity_score_dict,
                   metapaths, True)
