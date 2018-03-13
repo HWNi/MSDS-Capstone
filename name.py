@@ -38,7 +38,8 @@ def is_asian_name(last_name):
 
 
 class Name:
-    """Represent a name with its alternatives and authors.
+    """
+    Represent a name with its alternatives and authors.
 
     Attributes:
         name: a string describing the name.
@@ -52,43 +53,9 @@ class Name:
         similar_author_ids: a set of all author ids with similar names.
     """
 
-    def get_initials(self):
-        initials = ''
-        elements = self.name.split(' ')
-        for element in elements:
-            if len(element) >= 1:
-                initials += element[0]
-        return initials
-
-    def __name_process(self, name, mode=1):
-
-        # In case of M.I. Jordan
-        name = name.replace('?', '').lower().strip()
-        # replace M.I. to M I.
-        name = re.sub('([a-zA-Z]+)(\.)([a-zA-Z]+)', '\g<1> \g<3>', name)
-        # replace M I. to M I
-
-        # remove all  non [a-zA-Z] characters
-        # eable this and try again
-        name = re.sub('[^a-zA-Z ]', '', name)
-
-        name = ' '.join(name.split())
-
-        (first_name, middle_name, last_name) = self.__split_name(name)
-
-        if mode == 1:
-            self.first_name = first_name
-            self.middle_name = middle_name
-            self.last_name = last_name
-            self.name = ' '.join([first_name, middle_name, last_name]).strip()
-            self.name = ' '.join(self.name.split())
-            return self.name
-        else:
-            s = ' '.join([first_name, middle_name, last_name]).strip()
-            return ' '.join(s.split())
-
     def __init__(self, name, quick=False):
-        """Initialize the instance with a name.
+        """
+        Initialize the instance with a name.
 
         Parameters:
             name: The name read from the csv file, could be noisy.
@@ -126,11 +93,42 @@ class Name:
             self.initials = self.get_initials()
             self.bad_name_flag = False
 
+    def get_initials(self):
+        initials = ''
+        elements = self.name.split(' ')
+        for element in elements:
+            if len(element) >= 1:
+                initials += element[0]
+        return initials
+
+    def __name_process(self, name, mode=1):
+
+        # In case of M.I. Jordan
+        name = name.replace('?', '').lower().strip()
+        # replace M.I. to M I.
+        name = re.sub('([a-zA-Z]+)(\.)([a-zA-Z]+)', '\g<1> \g<3>', name)
+        # replace M I. to M I
+
+        # remove all  non [a-zA-Z] characters eable this and try again
+        name = re.sub('[^a-zA-Z ]', '', name)
+        name = ' '.join(name.split())
+        (first_name, middle_name, last_name) = self.__split_name(name)
+
+        if mode == 1:
+            self.first_name = first_name
+            self.middle_name = middle_name
+            self.last_name = last_name
+            self.name = ' '.join([first_name, middle_name, last_name]).strip()
+            self.name = ' '.join(self.name.split())
+            return self.name
+        else:
+            s = ' '.join([first_name, middle_name, last_name]).strip()
+            return ' '.join(s.split())
+
     def __split_name(self, name):
-        """Split a name into first, middle and last names."""
+        # Split a name into first, middle and last names.
         tokens = name.split(' ')
         suffix = ['jr', 'sr']
-        # suffix2 = ['i', 'ii', 'iii', 'iv', 'v', 'first', 'second', 'third']
         suffix2 = ['ii', 'iii', 'iv', 'first', 'second', 'third']
         elements = [token for token in tokens if token not in suffix]
         if len(elements) > 0 and elements[-1] in suffix2:
@@ -174,32 +172,6 @@ class Name:
                         else:
                             last_name = (middle_name + last_name).replace(' ', '')
                             middle_name = ''
-        #     elements = first_name.split(' ')
-        #     while True:
-        #         pos = -1
-        #         for i in xrange(len(elements) - 1):
-        #             # print elements
-        #             if elements[i] in asian_units:
-        #                 k = i
-        #                 while k + 1 < len(elements):
-        #                     if elements[k + 1] in asian_units:
-        #                         k = k + 1
-        #                         pos = i
-        #                     else:
-        #                         break
-        #                 new_element = elements.pop(i)
-        #                 while k - i > 0:
-        #                     new_element += elements.pop(i)
-        #                     k -= 1
-        #                 elements.insert(i, new_element)
-        #                 break
-        #         if pos == -1:
-        #             break
-        #     first_name = elements[0]
-        #     if len(elements) > 1:
-        #         middle_name = ' '.join(elements[1:])
-        #     else:
-        #         middle_name = ''
         return (first_name, middle_name, last_name)
 
     def __shorten_string(self, string):
@@ -217,7 +189,8 @@ class Name:
             return string[0]
 
     def __genearte_possible_names(self, (first_name, middle_name, last_name)):
-        """Generate all possible names give the full name.
+        """
+        Generate all possible names give the full name.
 
         Parameters:
             (first_name, middle_name, last_name): A tuple composed of
@@ -236,33 +209,20 @@ class Name:
             candidates.add(' '.join([first_name, element, last_name]).strip())
             candidates.add(' '.join([first_name, self.__shorten_string(element), last_name]).strip())
 
-        #e.g., Michael Jr. Jordan
+        # e.g., Michael Jr. Jordan
         candidates.add(' '.join([first_name, middle_name, last_name]).strip())
-        #e.g., Michael Jordan
+        # e.g., Michael Jordan
         candidates.add(' '.join([first_name, '', last_name]).strip())
-        #e.g., M. Jordan
-        candidates.add(' '.join([self.__shorten_string(first_name), '',
-                                 last_name]).strip())
-        # #e.g., M. J.
-        # candidates.add(' '.join(
-        #                [self.__shorten_string(first_name),
-        #                '',
-        #                self.__shorten_string(last_name)]
-        #                ))
+        # e.g., M. Jordan
+        candidates.add(' '.join([self.__shorten_string(first_name), '', last_name]).strip())
+        # e.g., M. J.
         # e.g., Michael J. Jordan
-        candidates.add(' '.join(
-                       [first_name,
-                       self.__shorten_string(middle_name),
-                       last_name]
-                       ).strip())
+        candidates.add(' '.join([first_name, self.__shorten_string(middle_name), last_name]).strip())
         #e.g., M. J. Jordan
-        candidates.add(' '.join(
-                       [self.__shorten_string(first_name),
-                       self.__shorten_string(middle_name),
-                       last_name]
-                       ).strip())
+        candidates.add(' '.join([self.__shorten_string(first_name),
+                                 self.__shorten_string(middle_name), last_name]).strip())
 
-        #e.g., Jordan Jr. Michael
+        # e.g., Jordan Jr. Michael
         limit = 1
         if len(last_name) == 1:
             limit -= 1
@@ -276,19 +236,12 @@ class Name:
             candidates.add(' '.join([last_name, first_name, middle_name]).strip())
             candidates.add(' '.join([first_name, last_name, middle_name]).strip())
             candidates.add(' '.join([middle_name, first_name, last_name]).strip())
-
         if len(self.initials) > 3:
             candidates.add(' '.join([first_name, middle_name]).strip())
 
         candidates_new = set()
         for candidate in candidates:
             candidates_new.add(' '.join(candidate.split()))
-        # #e.g., M. J. J.
-        # candidates.add(' '.join(
-        #                [self.__shorten_string(first_name),
-        #                self.__shorten_string(middle_name),
-        #                self.__shorten_string(last_name)]
-        #                ))
         return candidates_new
 
     def __generate_all_possible_names(self):
@@ -311,16 +264,41 @@ class Name:
                 self.alternatives = self.alternatives.union(self.__genearte_possible_names(pool))
         pool = [self.first_name, self.middle_name, self.last_name]
         self.alternatives = self.alternatives.union(self.__genearte_possible_names(pool))
-        # pool = [self.last_name, self.middle_name, self.first_name]
-        # self.alternatives = self.alternatives.union(self.__genearte_possible_names(pool))
-        # for permutation in itertools.permutations(pool):
-        #     self.alternatives = self.alternatives.union(
-        #         self.__genearte_possible_names(permutation))
-        # self.alternatives = self.alternatives.difference(set([self.name]))
         return self.alternatives
 
+    def add_author_id(self, author_id):
+        """
+        Add author_id which matches the name into set author_ids.
+
+        Parameters:
+            author_id: Id of the author.
+        """
+        self.author_ids.add(author_id)
+
+    def add_similar_author_id(self, author_id):
+        """
+        Add author_id which has similar name into set similar_author_ids.
+
+        Parameters:
+            author_id: Id of the author.
+        """
+        self.similar_author_ids.add(author_id)
+
+    def del_author_id(self, author_id):
+        """
+        Delete author_id which matches the name from set author_ids.
+
+        Parameters:
+            author_id: Id of the author.
+        """
+        self.author_ids.remove(author_id)
+
+    def add_alternative(self, alternative):
+        self.alternatives.add(alternative)
+
     def get_alternatives(self):
-        """Get all possible names.
+        """
+        Get all possible names.
 
         Note: This function will call generate_all_possible_names automatically
             if self.alternatives is empty.
@@ -330,30 +308,3 @@ class Name:
         """
         self.__generate_all_possible_names()
         return self.alternatives
-
-    def add_alternative(self, alternative):
-        self.alternatives.add(alternative)
-
-    def add_author_id(self, author_id):
-        """Add author_id which matches the name into set author_ids.
-
-        Parameters:
-            author_id: Id of the author.
-        """
-        self.author_ids.add(author_id)
-
-    def del_author_id(self, author_id):
-        """Delete author_id which matches the name from set author_ids.
-
-        Parameters:
-            author_id: Id of the author.
-        """
-        self.author_ids.remove(author_id)
-
-    def add_similar_author_id(self, author_id):
-        """Add author_id which has similar name into set similar_author_ids.
-
-        Parameters:
-            author_id: Id of the author.
-        """
-        self.similar_author_ids.add(author_id)
