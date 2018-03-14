@@ -2,6 +2,7 @@ from pre_processing import *
 from string_based import *
 from meta_path import *
 from post_process import *
+from cal_precision import *
 import cPickle
 
 if __name__ == '__main__':
@@ -54,7 +55,6 @@ if __name__ == '__main__':
     real_duplicate_groups = local_clustering(similarity_score_dict, potential_duplicate_groups,
                                               name_instance_dict, id_name_dict, name_statistics, metapaths)
 
-
     print "Obtain the closure, then filter noisy names"
     authors_duplicates_dict = merge_local_clusters(real_duplicate_groups, id_name_dict)
 
@@ -73,3 +73,4 @@ if __name__ == '__main__':
 
     print "Generate submission files"
     save_result(authors_duplicates_dict, name_instance_dict, id_name_dict)
+    cal_precision(authors_duplicates_dict)
