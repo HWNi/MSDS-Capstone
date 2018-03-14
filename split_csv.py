@@ -4,6 +4,7 @@ from requests.packages.urllib3.util.retry import Retry
 
 
 def get_metadata(doi):
+    """Extract additional metadata of paper based on doi."""
     headers = {"accept": "application/x-bibtex"}
     title, year, journal = '', '', ''
     sessions = requests.Session()
@@ -40,6 +41,7 @@ def get_metadata(doi):
 
 
 def split_csv():
+    """Convert raw data format into an unified format as the input of the model."""
     author_fn = 'data/Author.csv'
     paper_fn = 'data/Paper.csv'
     paper_author_fn = 'data/PaperAuthor.csv'
