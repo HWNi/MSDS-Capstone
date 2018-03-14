@@ -162,6 +162,7 @@ def load_author_word_files(author_paper_matrix):
 
 
 def load_author_affili_matrix_files():
+    # Load author-affiliation relationship
     def denoise_affiliation():
         # remove noise for each affiliation
         affiliation_list = []

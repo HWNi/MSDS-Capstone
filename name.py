@@ -67,10 +67,7 @@ class Name:
             self.has_dash = True
         else:
             self.has_dash = False
-
         name = name.replace(',', ' ')
-        # if name.rfind('-') > name.rfind(' '):
-        #     name.rfind('-') = ''
         if is_asian_name(name.strip().lower().split(' ')[-1]) or is_asian_name(name.strip().lower().split(' ')[0]):
             self.is_asian = True
             self.__name_process(name.replace('.', ' ').replace('-', ''), 1)
