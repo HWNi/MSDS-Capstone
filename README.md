@@ -1,6 +1,6 @@
 # UW MSDS-Capstone: Name Entity Disambiguation
 ## Project Poster
-![Project Poster](https://github.com/HWNi/MSDS-Capstone/blob/master/poster.png)
+![Project Poster](https://github.com/HWNi/MSDS-Capstone/blob/master/result/poster.png)
   
 ## About the Project
 ### What is name entity ambiguity?
