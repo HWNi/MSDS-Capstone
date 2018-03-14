@@ -2,7 +2,7 @@ from meta_path import *
 import os
 
 def find_conflict_name(authors_duplicates_dict, name_instance_dict, id_name_dict, name_statistics):
-    """Find author ids whose duplicate author list contain conflicts in terms of their names"""
+    """Find author ids whose potential duplicate names contain conflict."""
     conflict_ids = set()
     for (author_id, duplicate_group) in authors_duplicates_dict.iteritems():
         if not name_group_comparable(duplicate_group, name_instance_dict, id_name_dict, name_statistics):
@@ -11,18 +11,17 @@ def find_conflict_name(authors_duplicates_dict, name_instance_dict, id_name_dict
 
 
 def name_group_comparable(group, name_instance_dict, id_name_dict, name_statistics):
-    """Decide whether two groups of name instances are comparable"""
+    """Decide whether two groups of name instances are conflict."""
     for author_A in group:
         for author_B in group:
             if author_A < author_B:
                 if not name_comparable(name_instance_dict[id_name_dict[author_A][0]], name_instance_dict[id_name_dict[author_B][0]], name_statistics, False):
-                    # print "\t\tConflicted name group: " + id_name_dict[author_A][0] + '\tv.s.\t' + id_name_dict[author_B][0]
                     return False
     return True
 
 
 def name_group_comparable_with_tolerence(group, group1, group2, name_instance_dict, id_name_dict, name_statistics):
-    """Decide whether two groups of name instances are comparable with certain tolerance"""
+    """Decide whether two groups of name instances are comparable."""
     total = len(group1) * len(group2) + 0.0
     disobey = 0
     for author_A in group1:
@@ -41,16 +40,7 @@ def name_group_comparable_with_tolerence(group, group1, group2, name_instance_di
             return False
 
 def merge_local_clusters(real_duplicate_groups, id_name_dict):
-    """Merge local clusters.
-
-    Parameters:
-        real_duplicate_groups:
-            A set of groups which contain duplicate author_ids separately.
-
-    Returns:
-        A dictionary of duplicate authors with key: author id and value:
-        a list of duplicate author ids
-    """
+    """Merge cluster of duplicate author groups."""
     id_group_dict = dict()
     print "\tMapping each author to his/her duplicate authors from duplicate groups."
     for group in real_duplicate_groups:
@@ -71,14 +61,7 @@ def merge_local_clusters(real_duplicate_groups, id_name_dict):
 
 
 def find_closure(authors_duplicates_dict):
-    """Find the closure of duplicate authors for each author id.
-       Example : {1: [1, 2, 3, 4], 2: [2, 3, 4, 5]} -> {1: [2, 3, 4, 5], 2: [1, 3, 4, 5]}
-
-    Parameters:
-        authors_duplicates_dict
-            A dictionary of duplicate authors with key: author id and value:
-            a list of duplicate author ids
-    """
+    """Find the closure of duplicate authors for each author id."""
     print "\tFinding close duplicate author set for each author id."
     for author_id in authors_duplicates_dict.iterkeys():
         authors_duplicates_dict[author_id].add(author_id)
@@ -110,7 +93,7 @@ def find_closure(authors_duplicates_dict):
 
 
 def refine_result(authors_duplicates_dict, name_instance_dict, id_name_dict, name_statistics, similarity_dict, metapaths, remove_flag):
-    """Filter obvious conflict names of duplicate authors for each author id."""
+    """Filter out obvious conflict names."""
     for author_id in authors_duplicates_dict.iterkeys():
         if author_id in authors_duplicates_dict[author_id]:
             authors_duplicates_dict[author_id].remove(author_id)
@@ -223,7 +206,7 @@ def refine_result(authors_duplicates_dict, name_instance_dict, id_name_dict, nam
             authors_duplicates_dict[author_id].remove(author_id)
 
 def save_result(authors_duplicates_dict, name_instance_dict, id_name_dict):
-    """Generate the submission file and fullname file for analysis."""
+    """Save the result as text file."""
     directory = os.path.dirname(result_dir)
     if not os.path.exists(directory):
         os.makedirs(directory)
