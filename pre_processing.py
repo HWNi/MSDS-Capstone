@@ -10,11 +10,13 @@ from name import *
 
 
 def remove_noise_simple(src_name):
+    """Solve encoding problem in the raw data."""
     name = src_name.decode('utf-8')
     return unicodedata.normalize('NFKD', name).encode('ascii','ignore')
 
 
 def remove_noise(src):
+    """Substitue non-English characters with English characters."""
     src = src.decode('utf-8')
 
     pattern = re.compile(u'è\·ˉ |È\·ˉ |è\·ˉ|È\·ˉ', re.MULTILINE)
@@ -128,6 +130,7 @@ def remove_noise(src):
 
 
 def generate_new_author_names():
+    """Load and extract author names."""
     author_fn = 'data/Author_refined_simple.csv'
     paper_author_fn = 'data/PaperAuthor_refined_simple.csv'
     if not os.path.isfile(author_fn):
@@ -167,6 +170,7 @@ def generate_new_author_names():
 
 
 def cal_name_statistics(name_statistics, input_file, name_index):
+    """Load author name statistics."""
     with open(input_file, 'r') as csv_file:
         author_reader = csv.reader(csv_file, delimiter=',', quotechar='"')
         next(author_reader)
@@ -188,6 +192,7 @@ def cal_name_statistics(name_statistics, input_file, name_index):
 
 
 def generate_name_instance(input_file, id_index, name_index, name_statistics):
+    """Calculate a dictionary to store all related name instances."""
     name_instance_dict = dict()
     id_name_dict = dict()
     with open(input_file, 'rb') as csv_file:
