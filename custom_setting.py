@@ -2,29 +2,13 @@
 author_file = "./data/Author_refined.csv"
 paper_author_file = "./data/PaperAuthor_refined.csv"
 paper_file = './data/Paper.csv'
-
-
-# Serialized files
-serialization_dir = './serialization/'
+author_file_refined = './data/Author_refined_affiliation.csv'
 result_dir = './result/'
-
-name_statistics_file = 'name_statistics_seal'
-author_paper_stat_file = 'author_paper_stat_seal'
-name_instance_file = 'name_instance_seal'
-id_name_file = 'id_name_seal'
-
 duplicate_authors_file = "./result/duplicate_authors.csv"
 duplicate_authors_full_name_file = "./result/duplicate_authors_fullname.csv"
-duplicate_groups_file = "duplicate_groups_seal"
 
-coauthor_matrix_file = 'coauthor_seal'
-covenue_matrix_file = 'covenue_seal'
-author_paper_matrix_file = 'author_paper_seal'
-author_affli_matrix_file = 'author_affli_matrix_seal'
-author_venue_matrix_file = 'author_venue_seal'
-author_year_matrix_file = 'author_year_matrix_seal'
-author_word_matrix_file = 'author_word_seal'
-
+# Refine Affiliation
+author_file_refined = './data_filtered/Author_refined_v2.csv'
 
 # Aminer setting
 max_author = 3358 # Max Author id in sample

@@ -5,7 +5,6 @@ from chinese import *
 from korean import *
 from nicknames_v2 import *
 
-
 asian_units = taiwan_units.union(chinese_units)
 asian_last_names = korean_last_names.union(taiwan_last_names.union(chinese_last_names))
 nickname_set = set()
@@ -244,10 +243,11 @@ class Name:
         return candidates_new
 
     def __generate_all_possible_names(self):
-        """Generate all possible names considering all possible permutations.
+        """
+        Generate all possible names considering all possible permutations.
 
-        Note: compared to generate_possbile_names, this function additionally
-            covers the permutations of first, middle and last names.
+        Compared to generate_possbile_names, this function additionally covers the permutations
+        of first, middle and last names.
 
         Returns:
             A set of all possible names.

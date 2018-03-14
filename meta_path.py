@@ -1,3 +1,7 @@
+import csv
+import math
+from custom_setting import *
+from textblob import TextBlob as tb
 from scipy.sparse import lil_matrix
 from sklearn.preprocessing import normalize
 from string_based import *
@@ -158,7 +162,64 @@ def load_author_word_files(author_paper_matrix):
 
 
 def load_author_affili_matrix_files():
-    # Load author-affiliation(organization) relationship.
+    def denoise_affiliation():
+        # remove noise for each affiliation
+        affiliation_list = []
+        header = True
+        with open(author_file, 'rb') as f:
+            reader = csv.reader(f)
+            for row in reader:
+                if header:
+                    header = False
+                    continue
+                affiliation_list.append(row[2].lower())
+            f.close()
+
+        blob_list = [tb(re.sub(r'[^a-z ]', '', s)) for s in affiliation_list]
+
+        def tf(word, blob):
+            return float(blob.words.count(word)) / float(len(blob.words))
+
+        def n_containing(word, bloblist):
+            return sum(1 for blob in bloblist if word in blob.words)
+
+        def idf(word, bloblist):
+            return math.log(len(bloblist) / float((1 + n_containing(word, bloblist))))
+
+        def tfidf(word, blob, bloblist):
+            return tf(word, blob) * idf(word, bloblist)
+
+        affiliation_refine = []
+
+        for i, blob in enumerate(blob_list):
+            print("Top words in document {}".format(i + 1))
+            scores = {word: tfidf(word, blob, blob_list) for word in blob.words}
+            sorted_words = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+            s = ""
+            for word, score in sorted_words[:3]:
+                s = s + word + " "
+                print("\tWord: {}, TF-IDF: {}".format(word, round(score, 5)))
+            s = s.strip()
+            affiliation_refine.append(str(s))
+
+        with open(author_file_refined, 'wb') as csv_write:
+            paper_writer = csv.writer(csv_write)
+            with open(author_file, 'rb') as csv_read:
+                paper_reader = csv.reader(csv_read, delimiter=',')
+                # Skip first line
+                header = next(paper_reader)
+                header.append('affiliation_refined')
+                paper_writer.writerow(header)
+                count = 0
+                for row in paper_reader:
+                    row.append(affiliation_refine[count])
+                    paper_writer.writerow(row)
+                    count += 1
+                csv_read.close()
+            csv_write.close()
+
+    # remove noise for each affiliation
+    denoise_affiliation()
     dict_author_affi = dict()
     dict_affi = dict()
     cnt_affi = 1
