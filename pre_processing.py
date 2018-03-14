@@ -1,6 +1,5 @@
 #-*- coding: UTF-8 -*-
 import csv
-import cPickle
 import os
 import re
 import unicodedata
