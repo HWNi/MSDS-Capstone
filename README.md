@@ -60,13 +60,14 @@ This dataset contains descriptions of papers. Descriptions include title, year o
 This dataset connects the author and paper dataset with (paper ID, author ID) pairs.
 
 ### Data Source
-* [PubMed Baseline Data](ftp://ftp.ncbi.nlm.nih.gov/pubmed/)<br />
+* [PubMed Baseline Data](https://drive.google.com/drive/folders/1VKfJJqTHUXBYUDY1Lpldp8shPHC0eXUW)
 PubMed is an open database of life sciences and biomedical publications and articles. It is produced by The United States National Library of Medicine.<br />
 The original PubMed baseline data are stored as XML format. We created a script to transform the data from XML to 
 CSV and prepared the dataset according to the format described above.
   
-* [AMiner](https://aminer.org/disambiguation)<br />
+* [AMiner](https://drive.google.com/drive/folders/1bx6YbxUGK1OX1yqx5oS4BV2UW-WeOBRp)
 AMiner is a searchable online database provides comprehensive search and mining services for researcher social networks. It is created by professor Jie Tang from Tsinghua University, China. It was first launched in March 2006. Arnetminer also published several datasets for academic research purpose, including the Name Disambiguation dataset we used in the project.
+
 
 ## Conclusion
 The name entity disambiguation algorithm we built could potentially be applied to domains beyond the ones studied in the project. This is because we utilized features beyond the characteristics specific to name entities. The first part of our algorithm implements a string-based name matching method to find all potential duplicates; the second part calculates a network-based similarity 
