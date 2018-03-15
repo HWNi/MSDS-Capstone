@@ -76,6 +76,7 @@ During the development of the second part, we also tried some natural language p
 tf-idf to perform disambiguation of features used in the algorithm, for example, affiliation. However, the effect of that strategy didn't
 make a huge improvement to the final result.
 
+## Challenges
 Our project initially intended to develop a model based on an existing solution and then improve the scalability using parallel computation. However, we did not have enough time to finish the scaling due to the below challenges we met during our investigation:
 
 * Lack of labels and low-quality labels <br/>
