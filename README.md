@@ -1,27 +1,25 @@
 # UW MSDS-Capstone: Name Entity Disambiguation
-## Project Poster
-![Project Poster](https://github.com/HWNi/MSDS-Capstone/blob/master/result/poster.png)
   
-## About the Project
+## Project Introduction
 ### What is name entity ambiguity?
   
 Name entity ambiguity is a problem that occurs when a set of named entities stored in
 the digital libraries such as author names of publications, patient names of medical records,
-author names of patents and etc. are same or similar. Several reasons causing name entity ambiguity: 
-1. Misspelling when the text data were manually entered into the database
+author names of patents and etc. are same or similar. Several reasons could cause the ambiguity problem: 
+1. Misspelling when the text data is manually entered into the database
 2. Name homography
-3. Different rules and conventions of writing names such as using middle names
-4. Name changes due to special reason such as marriage. 
+3. Different rules and conventions of writing names, such as using middle names or initials
+4. Name changes due to special reasons such as marriage. 
 
 ### Why do we study this?
 
-Name entity ambiguity reduces the quality and reliability of information retrieved from database, and the consequence of
-entity ambiguity could lead to unpredictable negative impact and damage to who consume information. Therefore, name 
+Name entity ambiguity reduces the quality and reliability of the information retrieved from database. The consequence of
+entity ambiguity could lead to unpredictable negative impact and confusion to who consume the information. Therefore name 
 entity disambiguation is a critical task in digital libraries.
 
-There is a large number of outstanding research results for named entity disambiguation in the current NLP literature, 
+There is a large number of outstanding research results on name entity disambiguation in the current NLP literature, 
 but not all of the solutions are generalizable. So our goal of this project is to construct a disambiguation model that 
-can handle various domain of name entities.
+can handle various domains of name entities.
 
 
 ## Getting Started
@@ -31,7 +29,7 @@ We suggest to run all the code on a PC with at least 16GB memory.
 ### Software requirement
 You will need Python 2.7.X and Jupyter notebook installed to reproduce this project. 
 To install Python 2, see [download](https://www.python.org/downloads/) and [beginner's guide](https://www.python.org/about/gettingstarted/)
-To install Jupyter Notebook, follow [installation](http://jupyter.readthedocs.io/en/latest/install.html)
+To install Jupyter Notebook, follow the [installation](http://jupyter.readthedocs.io/en/latest/install.html).
 
 Addtionally, you will need following Python packages:
 * [numpy](http://www.numpy.org/)
@@ -41,11 +39,9 @@ Addtionally, you will need following Python packages:
 * [fuzzy](https://pypi.python.org/pypi/Fuzzy)
 
 ### How to run
-After you install the necessary packages, you need to create a folder named *data* in the root folder and put all the input 
-data sets (which will be introduced in the next section) in this folder. Then, you can start the program by running 
-*main.py*. After an entire iteration of algorithm, the performance of algorithm will be displayed through precision, 
-recall and F1-score in average. In addition, all the results of disambiguation will be saved as csv in the *result* 
-folder. 
+After you install the above necessary packages, you need to create a folder called *data* in the root folder and put all the input 
+datasets (which will be explained in the next section) into this folder. Then, you can start the program by running 
+*main.py*. After an entire iteration of the algorithm, the results of disambiguation will be saved as a csv file in the *result* folder. In addition, the performance of algorithm will be printed as acerage precision, recall and F1-score.
 
 ## Datasets Overview
 ### Input Data Structure
@@ -53,8 +49,8 @@ Our project followed the dataset configuration of [KDD Cup 2013 - Author Disambi
 There are 3 key datasets that will be considered in our algorithm:
 
 1. Author.csv  
-This dataset contains author IDs, author names and affiliation of authors. The same author can appear more 
-than once in this dataset, for instance because he/she publishes under different versions of his/her name, such as 
+This dataset contains author IDs, author names, and affiliation of authors. The same author can appear more 
+than once in the dataset under different author IDs, for instance the author publishes under different versions of his/her name, such as 
 J. Doe, Jane Doe, and J. A. Doe.
 
 2. Paper.csv  
@@ -64,12 +60,11 @@ This dataset contains descriptions of papers. Descriptions include title, year o
 This dataset connects the author and paper dataset with (paper ID, author ID) pairs.
 
 ### Data source
-* [PubMed Baseline Data](ftp://ftp.ncbi.nlm.nih.gov/pubmed/)
-PubMed is an open database of life sciences and biomedical publications and articles. 
-It is produced by The United States National Library of Medicine.
+* [PubMed Baseline Data](ftp://ftp.ncbi.nlm.nih.gov/pubmed/)<br />
+PubMed is an open database of life sciences and biomedical publications and articles. It is produced by The United States National Library of Medicine.
 
-The original PubMed baseline data are stored in XML format, so we created a script to do the transformation from XML to 
-CSV and prepare the data according to the structure introduced above.
+The original PubMed baseline data are stored in XML format, so we created a script to transform the data from XML to 
+CSV and prepare the dataset according to the format described above.
   
 * [Aminer](https://aminer.org/disambiguation)
 
@@ -94,6 +89,9 @@ labeling and find a label dataset. The dataset we used at the end is under the c
 * Disambiguation problem of features 
 Features used in the modeling process, like affiliation and conference, are ambiguous and potentially duplicate. 
 The features need to be processed and disambiguated first. 
+
+## Project Poster
+![Project Poster](https://github.com/HWNi/MSDS-Capstone/blob/master/result/poster.png)
 
 ## Reference
 Liu, Jialu, et al. "Ranking-based name matching for author disambiguation in bibliographic data.
