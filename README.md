@@ -76,7 +76,7 @@ During the development of the second part, we also tried some natural language p
 tf-idf to perform disambiguation of features used in the algorithm, for example, affiliation. However, the effect of that strategy didn't
 make a huge improvement to the final result.
 
-## Challenges
+### Challenges
 Our project initially intended to develop a model based on an existing solution and then improve the scalability using parallel computation. However, we did not have enough time to finish the scaling due to the below challenges we met during our investigation:
 
 * Lack of labels and low-quality labels <br/>
@@ -87,6 +87,9 @@ labeling and finding a labeled dataset. We were able to find a labeled dataset, 
 * Disambiguation problem of features <br/>
 Features used in the modeling process, like affiliation and conference, are ambiguous and potentially duplicate. 
 The features themselves are disambiguation problems and need to be processed and disambiguated first. 
+
+### Future work
+Future work of our project includes improve model performance(accuracy and recall of disambiguation) and improve model efficiency. Name disambiguation, or record linkage, is a field under active research and with wide applications. Due to the time limit and scope of the project, we just explored one of the possible methods. The authors hope to continue working on the area in the future studies.
 
 
 ## Project Poster
