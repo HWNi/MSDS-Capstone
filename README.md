@@ -59,36 +59,34 @@ This dataset contains descriptions of papers. Descriptions include title, year o
 3. PaperAuthor.csv  
 This dataset connects the author and paper dataset with (paper ID, author ID) pairs.
 
-### Data source
+### Data Source
 * [PubMed Baseline Data](ftp://ftp.ncbi.nlm.nih.gov/pubmed/)<br />
-PubMed is an open database of life sciences and biomedical publications and articles. It is produced by The United States National Library of Medicine.
-
-The original PubMed baseline data are stored in XML format, so we created a script to transform the data from XML to 
-CSV and prepare the dataset according to the format described above.
+PubMed is an open database of life sciences and biomedical publications and articles. It is produced by The United States National Library of Medicine.<br />
+The original PubMed baseline data are stored as XML format. We created a script to transform the data from XML to 
+CSV and prepared the dataset according to the format described above.
   
-* [Aminer](https://aminer.org/disambiguation)
-
+* [AMiner](https://aminer.org/disambiguation)<br />
+AMiner is a searchable online database provides comprehensive search and mining services for researcher social networks. It is created by professor Jie Tang from Tsinghua University, China. It was first launched in March 2006. Arnetminer also published several datasets for academic research purpose, including the Name Disambiguation dataset we used in the project.
 
 ## Conclusion
-The name disambiguation algorithm we built could potentially be applied to different domain beyond the ones used in the 
-project. This is because we utilized some features other than the name entities themselves. The first part of our algorithm
-implements a string-based name matching to find all potential duplicates; the second part uses a network-based similarity 
-score to narrow down. 
+The name entity disambiguation algorithm we built could potentially be applied to domains beyond the ones studied in the project. This is because we utilized features beyond the characteristics specific to name entities. The first part of our algorithm implements a string-based name matching method to find all potential duplicates; the second part calculates a network-based similarity 
+score to narrow down the results. 
 
 During the development of the second part, we also tried some natural language processing techniques such as using
-tf-idf to perform some simple disambiguation to one of the features, affiliation. However, the effect of that strategy didn't
-make a huge change to the final result.
+tf-idf to perform disambiguation of features used in the algorithm, for example, affiliation. However, the effect of that strategy didn't
+make a huge improvement to the final result.
 
-Our project initially intended to replicate an existing solution for name entity disambiguation and then parallelize the 
-solution. However, we did not have enough time to finish the scaling due to several challenges we met during our investigation:
-* Lack of labels and low-quality labels  
+Our project initially intended to develop a model based on an existing solution and then improve the scalability using parallel computation. However, we did not have enough time to finish the scaling due to the below challenges we met during our investigation:
 
+* Lack of labels and low-quality labels <br/>
 Lack of training data with labels was a big bottle neck for us at the beginning. We explored both approaches of manual 
-labeling and find a label dataset. The dataset we used at the end is under the coder of unconfident labels.
+labeling and finding a labeled dataset. We were able to find a labeled dataset, AMiner, at the end. However, the quality of the label is under doubt. We found several records potentially wrong. 
 
-* Disambiguation problem of features 
+
+* Disambiguation problem of features <br/>
 Features used in the modeling process, like affiliation and conference, are ambiguous and potentially duplicate. 
-The features need to be processed and disambiguated first. 
+The features themselves are disambiguation problems and need to be processed and disambiguated first. 
+
 
 ## Project Poster
 ![Project Poster](https://github.com/HWNi/MSDS-Capstone/blob/master/result/poster.png)
@@ -100,9 +98,10 @@ Liu, Jialu, et al. "Ranking-based name matching for author disambiguation in bib
 Sinha, Arnab, et al. "An overview of microsoft academic service (mas) and applications.
 " Proceedings of the 24th international conference on world wide web. ACM, 2015.
 
+Tang, Jie, et al. "Arnetminer: extraction and mining of academic social networks." Proceedings of the 14th ACM SIGKDD international conference on Knowledge discovery and data mining. ACM, 2008.
+
 ## Acknowledgement
-The authors’ sincere gratitude to the adviser and sponsor of the project, Jevin West in the Information School at the University of Washington; special thanks to the instructor of the capstone class, Megan Hazen and all staff members who make the
-project possible, Deborah Alterman and Gary Winchester.
+The authors’ sincere gratitude to the adviser and sponsor of the project, Jevin West in the Information School at the University of Washington; special thanks to the instructor of the capstone class, Megan Hazen and all staff members who make the project possible, Deborah Alterman and Gary Winchester.
 
 
 
